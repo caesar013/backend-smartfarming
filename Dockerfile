@@ -13,6 +13,13 @@ COPY --chown=node:node ./package*.json ./
 RUN npm ci
 COPY --chown=node:node . .
 
+ENV PORT=3333
+ENV HOST=0.0.0.0
+
+EXPOSE $PORT
+
+CMD ["npm", "run", "dev"]
+
 # FROM dependencies AS build
 # RUN node ace build --production
 
