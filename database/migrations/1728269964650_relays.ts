@@ -8,7 +8,8 @@ export default class extends BaseSchema {
       table.increments('id')
       table.integer('number')
       table.dateTime('enabled_at')
-      table.dateTime('disabled_at')
+      table.dateTime('disabled_at').nullable()
+      table.boolean('current_status')
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

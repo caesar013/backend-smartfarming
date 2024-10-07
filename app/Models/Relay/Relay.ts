@@ -8,11 +8,14 @@ export default class Relay extends BaseModel {
   @column()
   public number: number
 
-  @column()
+  @column.dateTime({ autoCreate: true })
   public enabledAt: DateTime
 
   @column()
   public disabledAt: DateTime
+
+  @column()
+  public currentStatus: boolean
 
   @column.dateTime({ autoCreate: true })
   public created_at: DateTime
@@ -21,6 +24,6 @@ export default class Relay extends BaseModel {
   public updated_at: DateTime
 
   static get table() {
-    return "" // table name
+    return "relays" // table name
   }
 }
