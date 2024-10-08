@@ -2,6 +2,7 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import AuthService from 'App/Services/Auth/AuthService'
 import AccountService from 'App/Services/User/AccountService'
 import Base64 from 'base-64'
+import { schema } from '@ioc:Adonis/Core/Validator'
 
 export default class AuthController {
   service = new AuthService()
@@ -15,6 +16,16 @@ export default class AuthController {
       return response.api(token, 'OK', 200, request)
     } catch (error) {
       return response.error(error.message)
+    }
+  }
+
+  public async register ({ auth, request, response }: HttpContextContract) {
+    try {
+      const registerValidation = schema.create({
+        
+      })
+    } catch (e) {
+      return response.error(e.message)
     }
   }
 

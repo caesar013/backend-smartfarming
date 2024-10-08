@@ -1,13 +1,15 @@
+import SensorRepository from "../app/Repositories/Sensor/SensorRepository";
+import Env from '@ioc:Adonis/Core/Env'
 import mqtt from "mqtt";
 
-const client = mqtt.connect(`mqtt://127.0.0.1`, {
-    port: 1883,
-    clientId: 'smartfarming',
+const client = mqtt.connect(`mqtt://${Env.get('MQTT_URL')}`, {
+    port: Env.get('MQTT_PORT'),
+    clientId: Env.get('MQTT_CLIENT_ID'),
     protocolId: 'MQIsdp',
     protocolVersion: 3,
     connectTimeout: 1000,
-    username: 'smartfarming',
-    password: 'smartfarming'
+    username: Env.get('MQTT_USERNAME'),
+    password: Env.get('MQTT_PASSWORD')
 });
 
 client.on('connect', () => {
@@ -17,16 +19,16 @@ client.on('connect', () => {
      client.subscribeAsync('smartfarming/sensor/npk1');
      client.subscribeAsync('smartfarming/sensor/npk2');
 
-    client.on('message', (topic, message) => {
+    client.on('message', async (topic, message) => {
         switch (topic) {
             case ('smartfarming/sensor/dht'):
-                console.log('ini dht');
+                await SensorRepository.storeDht(JSON.parse(message.toString()));
                 break;
             case('smartfarming/sensor/npk1'):
-                console.log('ini npk1');
+                await SensorRepository.storeNpk(JSON.parse(message.toString()), 'npk-1');
                 break;
             case('smartfarming/sensor/npk2'):
-                console.log('ini npk2');
+                await SensorRepository.storeNpk(JSON.parse(message.toString()), 'npk-2');
                 break;
             default:
                 break;
