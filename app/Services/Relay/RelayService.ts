@@ -9,6 +9,8 @@ export default class RelayService extends BaseService {
 
   public async setRelay(number: number, state: number) {
 
+    let success = true;
+
       if(state == 1){
         const relay = await this.repository.get(number);
 
@@ -28,9 +30,13 @@ export default class RelayService extends BaseService {
         }
       }
 
-      client.publish(`smartfarming/relay`, JSON.stringify({ number, state }));
+      client.publish(`smartfarming/relay`, JSON.stringify({ number, state }), (e) => {
+        if(e){
+          success = false
+        }
+      });
       return {
-        success: true
+        success
       };
   }
 

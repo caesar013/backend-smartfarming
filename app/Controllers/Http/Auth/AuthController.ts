@@ -2,7 +2,7 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import AuthService from 'App/Services/Auth/AuthService'
 import AccountService from 'App/Services/User/AccountService'
 import Base64 from 'base-64'
-import { schema } from '@ioc:Adonis/Core/Validator'
+import { rules, schema } from '@ioc:Adonis/Core/Validator'
 
 export default class AuthController {
   service = new AuthService()
@@ -19,13 +19,41 @@ export default class AuthController {
     }
   }
 
-  public async register ({ auth, request, response }: HttpContextContract) {
+  public async register ({ request, response }: HttpContextContract) {
     try {
       const registerValidation = schema.create({
-        
-      })
+        username: schema.string({}, [
+          rules.maxLength(25)
+        ]),
+        pwd: schema.string({}, [
+          rules.minLength(8)
+        ]),
+        email: schema.string({}, [
+          rules.email()
+        ]),
+        fullname: schema.string(),
+      });
+
+      const payload = await request.validate({schema: registerValidation});
+
+      const store = await this.accountService.createAccount(payload);
+
+      if(!store?.success){
+        return response.unprocessableEntity({
+          success: false,
+          message: store?.message
+        });
+      }
+
+      return response.created({
+        success: store.success,
+        message: store.message
+      });
     } catch (e) {
-      return response.error(e.message)
+      return response.internalServerError({
+        success: false,
+        message: e.messages
+      });
     }
   }
 
