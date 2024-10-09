@@ -10,7 +10,41 @@ export default class SensorController {
     // attribute
   ]
 
-  public async index ({ request, response }: HttpContextContract) {
+  TABLE = {
+    dht: 'data_dht',
+    npk: 'data_npk',
+  }
+
+  SENSOR = {
+    dht: 'dht',
+    npk1: 'npk-1',
+    npk2: 'npk-2',
+  }
+
+  METRIC = {
+    dht: {
+      viciTemperature: 'temperature',
+      viciHumidity: 'humidity',
+      viciLuminosity: 'luminosity',
+    },
+    npk: {
+      soilTemperature: 'temperature',
+      soilHumidity: 'humidity',
+      soilConductivity: 'conductivity',
+      soilPh: 'ph',
+      soilNitrogen: 'nitrogen',
+      soilPhosphorus: 'phosphorus',
+      soilPotassium: 'potassium',
+    }
+  }
+
+  TIME_RANGE = {
+    // range
+    HOURLY: 'hour',
+    DAILY: 'day',
+  }
+
+  public async index({ request, response }: HttpContextContract) {
     try {
       const options = request.parseParams(request.all())
       const result = await this.service.getAll(options)
@@ -20,7 +54,7 @@ export default class SensorController {
     }
   }
 
-  public async store ({ request, response }: HttpContextContract) {
+  public async store({ request, response }: HttpContextContract) {
     try {
       await request.validate(CreateSensorValidator)
       const data = request.only(this.FETCHED_ATTRIBUTE)
@@ -35,7 +69,7 @@ export default class SensorController {
     }
   }
 
-  public async show ({ params, request, response }: HttpContextContract) {
+  public async show({ params, request, response }: HttpContextContract) {
     try {
       const options = request.parseParams(request.all())
       const result = await this.service.show(params.id, options)
@@ -48,7 +82,7 @@ export default class SensorController {
     }
   }
 
-  public async update ({ params, request, response }: HttpContextContract) {
+  public async update({ params, request, response }: HttpContextContract) {
     try {
       await request.validate(UpdateSensorValidator)
       const data = request.only(this.FETCHED_ATTRIBUTE)
@@ -66,7 +100,7 @@ export default class SensorController {
     }
   }
 
-  public async destroy ({ params, response }: HttpContextContract) {
+  public async destroy({ params, response }: HttpContextContract) {
     try {
       const result = await this.service.delete(params.id)
       if (!result) {
@@ -77,11 +111,22 @@ export default class SensorController {
       return response.error(error.message)
     }
   }
-
-  public async destroyAll ({ response }: HttpContextContract) {
+  //
+  public async destroyAll({ response }: HttpContextContract) {
     try {
       await this.service.deleteAll()
       return response.api(null, 'All Sensor deleted!')
+    } catch (error) {
+      return response.error(error.message)
+    }
+  }
+
+  public async getData({ request, response }: HttpContextContract) {
+    try {
+      const options = this.service.parseParams(request.all(), this.SENSOR, this.TABLE, this.METRIC, this.TIME_RANGE)
+      const result = await this.service.getAll(options)
+      return result
+      // return this.service.parseResponse(result, 'OK', 200)
     } catch (error) {
       return response.error(error.message)
     }
