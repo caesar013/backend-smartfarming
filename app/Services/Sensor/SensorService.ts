@@ -30,6 +30,64 @@ export default class SensorService extends BaseService {
     }
   }
 
+  parseResponse(data: any, message?: string, status?: number) {
+    const parsedResponse = this.parseDataResponse(data)
+
+    return {
+      data: parsedResponse,
+      statusCode: status,
+      message: message,
+    }
+  }
+
+  parseDataResponse(data: any) {
+    let parsedData: any = {}
+    Object.keys(data).forEach(key => {
+      parsedData[key] = []
+      data[key].forEach((d: any) => {
+        parsedData[key].push(this.parseData(d))
+      })
+    })
+    return parsedData
+  }
+
+  parseData(data: any) {
+    let parsedData: any = {}
+
+    Object.keys(data).forEach(key => {
+      if (key === 'day' || key === 'hour') {
+        let date = this.getDate(data.day, data.hour)
+        parsedData[key] = date
+      } else {
+        parsedData[key] = this.getData(data[key], key)
+      }
+    })
+    return parsedData
+  }
+
+  getDate(day: any, hour: any) {
+    let time: any
+    if (day) {
+      time = (DateTime.fromISO(day.toISOString(), {zone: 'Asia/Jakarta'}).day)
+    } else if (hour) {
+      time = (DateTime.fromISO(hour.toISOString()).hour + 7) % 24
+    }
+    return time
+  }
+
+  getData(data: any, key: string) {
+    let parsedData = Math.round(parseFloat(data))
+
+    if (key.includes('vici')) {
+      parsedData = parsedData / 100
+    } else  if (key.includes('ph')) {
+      parsedData = parsedData / 10
+    } else {
+      parsedData = parsedData
+    }
+    return parsedData
+  }
+
   parseRequest(data: any) {
     if (data) {
       let parsedRequest: any = {}
@@ -82,7 +140,7 @@ export default class SensorService extends BaseService {
     return parsedMetric
   }
 
-  parseRange(data: any, sensor: any, time_range: any) {
+  parseRange(data: any, sensor: any, time_range: string) {
     let parsedRange: any = {}
     Object.keys(sensor).forEach(key => {
       parsedRange[key] = this.getRange(data, time_range)
