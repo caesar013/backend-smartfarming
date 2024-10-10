@@ -21,7 +21,7 @@ export default class RelayController {
     }
   }
   
-  public async getRelayStatus({ auth, response }: HttpContextContract) {
+  public async getRelayStatus({ response }: HttpContextContract) {
     try {
       const data = await this.service.getStatus();
       
