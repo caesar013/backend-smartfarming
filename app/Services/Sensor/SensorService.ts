@@ -15,6 +15,21 @@ export default class SensorService extends BaseService {
     }
   }
 
+  async getLatest(sensor: any, table: any, metric: any, time_range: any) {
+    try {
+      const sensors = sensor
+      const tables = this.parseTable(sensor, table)
+      const metrics = this.parseMetric(null, sensor, metric)
+      const start = DateTime.now().minus({ hour: 1 }).startOf('hour').toUTC()
+      const end = DateTime.now().endOf('hour').toUTC()
+      const ranges = this.parseRange({ start: start, end: end, time_range: 'HOURLY' }, sensors, time_range)
+
+      return await this.repository.getAll(sensors, tables, metrics, ranges)
+    } catch (error) {
+      throw error
+    }
+  }
+
   parseParams(data: any, sensor: any, table: any, metric: any, time_range: any) {
     const parsedRequest = this.parseRequest(data)
     const parsedSensor = this.parseSensor(parsedRequest.sensor, sensor)
@@ -70,7 +85,7 @@ export default class SensorService extends BaseService {
     if (day) {
       time = (DateTime.fromISO(day.toISOString(), {zone: 'Asia/Jakarta'}).day)
     } else if (hour) {
-      time = (DateTime.fromISO(hour.toISOString()).hour + 7) % 24
+      time = DateTime.fromISO(hour.toISOString(), {zone: 'Asia/Jakarta'}).hour
     }
     return time
   }
@@ -83,7 +98,7 @@ export default class SensorService extends BaseService {
     } else  if (key.includes('ph')) {
       parsedData = parsedData / 10
     } else {
-      parsedData = parsedData
+      parsedData = parsedData / 100
     }
     return parsedData
   }
@@ -196,7 +211,7 @@ export default class SensorService extends BaseService {
   }
 
   getRangeType(data: string, time_range: any) {
-    if (data) {
+    if (data && time_range[data]) {
       return time_range[data]
     } else {
       return time_range['DAILY']

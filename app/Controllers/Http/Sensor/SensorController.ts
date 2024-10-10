@@ -111,7 +111,7 @@ export default class SensorController {
       return response.error(error.message)
     }
   }
-  //
+
   public async destroyAll({ response }: HttpContextContract) {
     try {
       await this.service.deleteAll()
@@ -125,6 +125,16 @@ export default class SensorController {
     try {
       const options = this.service.parseParams(request.all(), this.SENSOR, this.TABLE, this.METRIC, this.TIME_RANGE)
       const result = await this.service.getAll(options)
+      return this.service.parseResponse(result, 'OK', 200)
+    } catch (error) {
+      return response.error(error.message)
+    }
+  }
+
+  public async getLatest({ response }: HttpContextContract) {
+    try {
+      const result = await this.service.getLatest(this.SENSOR, this.TABLE, this.METRIC, this.TIME_RANGE)
+      // return result
       return this.service.parseResponse(result, 'OK', 200)
     } catch (error) {
       return response.error(error.message)
