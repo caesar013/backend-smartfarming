@@ -21,8 +21,9 @@ export default class RelayController {
     }
   }
   
-  public async getRelayStatus({ response }: HttpContextContract) {
+  public async getRelayStatus({ auth, response }: HttpContextContract) {
     try {
+      console.log(auth.isLoggedIn)
       const data = await this.service.getStatus();
       
       return response.ok({

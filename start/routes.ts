@@ -35,7 +35,7 @@ Route.group(function () {
       }
     })
   }
-}).prefix('api')
+}).prefix('api').middleware('auth')
 
 Route.group(function () {
   if (fs.existsSync(`${__dirname}/routes/auth`)) {

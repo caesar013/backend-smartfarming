@@ -9,4 +9,8 @@ export default class Sensor extends BaseModel {
 
   @column()
   public sensorName: string
+
+  static get table() {
+    return "public.sensors" // table name
+  }
 }

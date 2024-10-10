@@ -24,6 +24,6 @@ export default class Relay extends BaseModel {
   public updated_at: DateTime
 
   static get table() {
-    return "relays" // table name
+    return "public.relays" // table name
   }
 }

@@ -35,4 +35,8 @@ export default class Npk extends BaseModel {
   
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
+
+  static get table() {
+    return "public.npks" // table name
+  }
 }
