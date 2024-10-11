@@ -21,7 +21,7 @@ export default class Dht extends BaseModel {
   @hasOne(() => Sensor)
   public sensor: HasOne<typeof Sensor>
 
-  @column.dateTime({ autoCreate: true })
+  @column()
   public createdAt: DateTime
 
   static get table() {
