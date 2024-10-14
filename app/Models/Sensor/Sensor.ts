@@ -17,7 +17,7 @@ export default class Sensor extends BaseModel {
   public created_at: DateTime
 
   static get table() {
-    return "public.sensor" // table name
+    return "public.sensors" // table name
   }
 
   // has many data npk
