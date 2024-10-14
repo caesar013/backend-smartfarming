@@ -20,8 +20,8 @@ export default class SensorService extends BaseService {
       const sensors = sensor
       const tables = this.parseTable(sensor, table)
       const metrics = this.parseMetric(null, sensor, metric)
-      const start = DateTime.now().minus({ hour: 1 }).startOf('hour').toUTC()
-      const end = DateTime.now().endOf('hour').toUTC()
+      const start = DateTime.now().startOf('hour').setZone('Asia/Jakarta').toUTC()
+      const end = DateTime.now().endOf('hour').setZone('Asia/Jakarta').toUTC()
       const ranges = this.parseRange({ start: start, end: end, time_range: 'HOURLY' }, sensors, time_range)
 
       return await this.repository.getAll(sensors, tables, metrics, ranges)
@@ -83,9 +83,9 @@ export default class SensorService extends BaseService {
   getDate(day: any, hour: any) {
     let time: any
     if (day) {
-      time = (DateTime.fromISO(day.toISOString(), {zone: 'Asia/Jakarta'}).day)
+      time = DateTime.fromISO(day.toISOString(), { zone: 'Asia/Jakarta' }).day
     } else if (hour) {
-      time = DateTime.fromISO(hour.toISOString(), {zone: 'Asia/Jakarta'}).hour
+      time = DateTime.fromISO(hour.toISOString(), { zone: 'Asia/Jakarta' }).hour
     }
     return time
   }

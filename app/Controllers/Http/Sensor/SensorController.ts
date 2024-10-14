@@ -134,7 +134,6 @@ export default class SensorController {
   public async getLatest({ response }: HttpContextContract) {
     try {
       const result = await this.service.getLatest(this.SENSOR, this.TABLE, this.METRIC, this.TIME_RANGE)
-      // return result
       return this.service.parseResponse(result, 'OK', 200)
     } catch (error) {
       return response.error(error.message)
