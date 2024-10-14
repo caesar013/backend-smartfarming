@@ -1,0 +1,37 @@
+services:
+  be:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sm-backend
+    command: node ace serve --watch
+    develop:
+      watch:
+        - action: sync
+          path : .
+          target: /home/node/app
+          ignore:
+            - node_modules/
+            - .git
+            - Dockerfile
+            - docker-compose.yaml
+            - package-lock.json
+            - package.json
+            - .gitignore
+            - .editorconfig
+            - .env.example
+            - .md
+            - .env
+    ports:
+      - "5000:3333"
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT}
+      POSTGRES_HOST: ${PG_HOST}
+      POSTGRES_PORT: ${PG_PORT}
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB_NAME}
+      TZ: "Asia/Jakarta"
+    env_file:
+      - ./.env
