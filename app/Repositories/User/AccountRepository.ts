@@ -13,5 +13,13 @@ export default class AccountRepository extends BaseRepository {
       throw error
     }
   }
+
+  async findByUsername(username: string){
+    try {
+      return await this.model.query().where('username', username).first();
+    } catch (error) {
+      throw error
+    }
+  }
 }
     

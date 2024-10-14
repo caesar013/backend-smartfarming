@@ -18,6 +18,43 @@ export default class AccountService extends BaseService {
     }
   }
 
+  async createAccount(data: any) {
+    const email = await this.repository.findByEmail(data.email);
+
+    if(email) {
+      return {
+        success: false,
+        message: "Email is already used!"
+      }
+    }
+
+    const username = await this.repository.findByUsername(data.username);
+
+    if(username) {
+      return {
+        success: false,
+        message: "Username is already used!"
+      }
+    }
+
+    try {
+      data.urole_id = 'e3094832-fbbf-4d88-9bb3-0b83e374cc37';
+      data.google_id = 1;
+      await this.store(data);
+
+      return {
+        success: true,
+        message: "Account created!"
+      }
+
+    } catch (e) {
+      return {
+        success: false,
+        message: e.message
+      }
+    }
+  }
+
   async update(id: any, data: any) {
     try {
       if (data.pwd) {
