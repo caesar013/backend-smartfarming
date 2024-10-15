@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon'
 import { BaseModel, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import DataNpk from '../DataNpk/DataNpk'
 import DataDht from '../DataDht/DataDht'
@@ -12,9 +11,6 @@ export default class Sensor extends BaseModel {
 
   @column()
   public desc: string
-
-  @column.dateTime({ autoCreate: true })
-  public created_at: DateTime
 
   static get table() {
     return "public.sensors" // table name
