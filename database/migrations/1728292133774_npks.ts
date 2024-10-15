@@ -3,7 +3,7 @@ import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 export default class extends BaseSchema {
   protected tableName = 'npks'
 
-  public async up () {
+  public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table.integer('temperature')
@@ -12,14 +12,14 @@ export default class extends BaseSchema {
       table.integer('ph')
       table.integer('nitrogen')
       table.integer('phosphorus')
-      table.integer('pottasium')
+      table.integer('potassium')
       table.bigInteger('sensor_id').unsigned()
       table.foreign('sensor_id').references('id').inTable('sensors')
-      table.timestamp('created_at', { useTz: true })
+      table.timestamp('created_at').defaultTo(this.now())
     })
   }
 
-  public async down () {
+  public async down() {
     this.schema.dropTable(this.tableName)
   }
 }
