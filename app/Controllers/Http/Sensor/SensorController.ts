@@ -11,8 +11,8 @@ export default class SensorController {
   ]
 
   TABLE = {
-    dht: 'data_dht',
-    npk: 'data_npk',
+    dht: 'dhts',
+    npk: 'npks',
   }
 
   SENSOR = {
