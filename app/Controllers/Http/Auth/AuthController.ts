@@ -8,7 +8,7 @@ export default class AuthController {
   service = new AuthService()
   accountService = new AccountService()
 
-  public async login ({ auth, request, response }: HttpContextContract) {
+  public async login({ auth, request, response }: HttpContextContract) {
     try {
       const credentials = this.getBasicAuth(request.header('authorization'))
       const rememberMe = request.body().remember_me ?? false
@@ -19,7 +19,7 @@ export default class AuthController {
     }
   }
 
-  public async register ({ request, response }: HttpContextContract) {
+  public async register({ request, response }: HttpContextContract) {
     try {
       const registerValidation = schema.create({
         username: schema.string({}, [
@@ -34,11 +34,11 @@ export default class AuthController {
         fullname: schema.string(),
       });
 
-      const payload = await request.validate({schema: registerValidation});
+      const payload = await request.validate({ schema: registerValidation });
 
       const store = await this.accountService.createAccount(payload);
 
-      if(!store?.success){
+      if (!store?.success) {
         return response.unprocessableEntity({
           success: false,
           message: store?.message
@@ -50,14 +50,16 @@ export default class AuthController {
         message: store.message
       });
     } catch (e) {
+      let message = Object.keys(e.messages)[0] + ": " + e.messages[Object.keys(e.messages)[0]]
+
       return response.internalServerError({
         success: false,
-        message: e.messages
+        message
       });
     }
   }
 
-  public async logout ({ auth, response }: HttpContextContract) {
+  public async logout({ auth, response }: HttpContextContract) {
     try {
       await auth.use('api').revoke()
       return response.api(null, 'Logout successful!')
@@ -66,7 +68,7 @@ export default class AuthController {
     }
   }
 
-  public async oauthRedirect ({ ally, response }) {
+  public async oauthRedirect({ ally, response }) {
     try {
       return ally.use('google').redirect()
     } catch (error) {
@@ -74,17 +76,17 @@ export default class AuthController {
     }
   }
 
-  public async oauthCallback ({ ally, auth, response }) {
+  public async oauthCallback({ ally, auth, response }) {
     try {
       const google = await ally.use('google').user()
       let user = await this.accountService.findByEmail(google.email)
       if (!user) {
         return response.error('akun tidak terdaftar')
-      }else{
+      } else {
         if (!user.google_id) {
           await this.accountService.update(user.id, {
             google_id: google.id,
-            status:true
+            status: true
           })
         }
         await user.load('role')
@@ -96,7 +98,7 @@ export default class AuthController {
       return response.error(error.message)
     }
   }
-  public async forgotPassword ({ request, response }) {
+  public async forgotPassword({ request, response }) {
     try {
       const data = await request.all()
       await this.service.forgotPassword(data.credential, request)
@@ -106,7 +108,7 @@ export default class AuthController {
     }
   }
 
-  public async restorePassword ({ request, response }) {
+  public async restorePassword({ request, response }) {
     try {
       const data = await request.all()
       await this.service.restorePassword(data)

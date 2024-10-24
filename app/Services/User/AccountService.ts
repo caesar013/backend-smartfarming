@@ -1,6 +1,7 @@
 import BaseService from "App/Base/Services/BaseService"
 import AccountRepository from "App/Repositories/User/AccountRepository"
 import Hash from '@ioc:Adonis/Core/Hash'
+import Role from "App/Models/User/Role"
 
 export default class AccountService extends BaseService {
   constructor() {
@@ -38,7 +39,8 @@ export default class AccountService extends BaseService {
     }
 
     try {
-      data.urole_id = 'e3094832-fbbf-4d88-9bb3-0b83e374cc37';
+      const role = await Role.findBy('code', 'ADMN')
+      data.urole_id = role?.id
       data.google_id = 1;
       await this.store(data);
 
@@ -65,7 +67,7 @@ export default class AccountService extends BaseService {
       throw error
     }
   }
-  
+
   async findByEmail (email: string) {
     try {
       const akun = await this.repository.findByEmail(email)
@@ -75,4 +77,3 @@ export default class AccountService extends BaseService {
     }
   }
 }
-    
