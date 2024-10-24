@@ -1,6 +1,7 @@
-import { BaseModel, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
-import DataNpk from '../DataNpk/DataNpk'
-import DataDht from '../DataDht/DataDht'
+import { BaseModel, BelongsTo, belongsTo, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import Dht from 'App/Models/Sensor/Dht'
+import Npk from 'App/Models/Sensor/Npk'
+import Table from 'App/Models/Sensor/Table'
 
 export default class Sensor extends BaseModel {
   @column({ isPrimary: true })
@@ -12,18 +13,26 @@ export default class Sensor extends BaseModel {
   @column()
   public desc: string
 
+  @column()
+    public table_id: number
+
   static get table() {
     return "public.sensors" // table name
   }
 
   // has many data npk
-  @hasMany(() => DataNpk, {
+  @hasMany(() => Npk, {
     foreignKey: 'sensor_id',
   })
-  public npk: HasMany<typeof DataNpk>
+  public npk: HasMany<typeof Npk>
   // has many data dht
-  @hasMany(() => DataDht, {
+  @hasMany(() => Dht, {
     foreignKey: 'sensor_id',
   })
-  public dht: HasMany<typeof DataDht>
+  public dht: HasMany<typeof Dht>
+
+  @belongsTo(() => Table, {
+    foreignKey: 'table_id',
+  })
+  public table: BelongsTo<typeof Table>
 }

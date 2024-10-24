@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm'
-import Sensor from './Sensor'
+import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import Sensor from 'App/Models/Sensor/Sensor'
 
 export default class Npk extends BaseModel {
   @column({ isPrimary: true })
@@ -8,31 +8,33 @@ export default class Npk extends BaseModel {
 
   @column()
   public temperature: number
-  
+
   @column()
   public humidity: number
-  
+
   @column()
   public conductivity: number
-  
+
   @column()
   public ph: number
-  
+
   @column()
   public nitrogen: number
-  
+
   @column()
   public phosphorus: number
-  
+
   @column()
-  public pottasium: number
-  
+  public potassium: number
+
   @column()
   public sensor_id: number
 
-  @hasOne(() => Sensor)
-  public sensor: HasOne<typeof Sensor>
-  
+  @belongsTo(() => Sensor, {
+    foreignKey: 'sensor_id',
+  })
+  public sensor: BelongsTo<typeof Sensor>
+
   @column()
   public createdAt: DateTime
 

@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, HasOne, hasOne } from '@ioc:Adonis/Lucid/Orm'
-import Sensor from './Sensor'
+import { BaseModel, column, BelongsTo, belongsTo } from '@ioc:Adonis/Lucid/Orm'
+import Sensor from 'App/Models/Sensor/Sensor'
 
 export default class Dht extends BaseModel {
   @column({ isPrimary: true })
@@ -8,7 +8,7 @@ export default class Dht extends BaseModel {
 
   @column()
   public temperature: number
-  
+
   @column()
   public humidity: number
 
@@ -18,8 +18,10 @@ export default class Dht extends BaseModel {
   @column()
   public sensor_id: number
 
-  @hasOne(() => Sensor)
-  public sensor: HasOne<typeof Sensor>
+  @belongsTo(() => Sensor, {
+    foreignKey: 'sensor_id',
+  })
+  public sensor: BelongsTo<typeof Sensor>
 
   @column()
   public createdAt: DateTime
