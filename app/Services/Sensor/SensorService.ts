@@ -1,4 +1,9 @@
 import BaseService from "App/Base/Services/BaseService"
+import { DHT } from "App/Enums/DHT"
+import { NPK } from "App/Enums/NPK"
+import { TOPICS } from "App/Enums/TOPICS"
+import { SENSOR } from "App/Enums/SENSOR"
+import { TABLE } from "App/Enums/TABLE"
 import SensorRepository from "App/Repositories/Sensor/SensorRepository"
 import { DateTime } from "luxon"
 
@@ -15,26 +20,19 @@ export default class SensorService extends BaseService {
     }
   }
 
-  async getLatest(sensor: any, table: any, metric: any, time_range: any) {
+  async getLatest() {
     try {
-      const sensors = sensor
-      const tables = this.parseTable(sensor, table)
-      const metrics = this.parseMetric(null, sensor, metric)
-      const start = DateTime.now().startOf('hour').setZone('Asia/Jakarta').toUTC()
-      const end = DateTime.now().endOf('hour').setZone('Asia/Jakarta').toUTC()
-      const ranges = this.parseRange({ start: start, end: end, time_range: 'HOURLY' }, sensors, time_range)
-
-      return await this.repository.getAll(sensors, tables, metrics, ranges)
+      return await this.repository.getLatest(TABLE)
     } catch (error) {
       throw error
     }
   }
 
-  parseParams(data: any, sensor: any, table: any, metric: any, time_range: any) {
+  parseParams(data: any, time_range: any) {
     const parsedRequest = this.parseRequest(data)
-    const parsedSensor = this.parseSensor(parsedRequest.sensor, sensor)
-    const tables = this.parseTable(parsedSensor, table)
-    const parsedMetric = this.parseMetric(parsedRequest.metric, parsedSensor, metric)
+    const parsedSensor = this.parseSensor(parsedRequest.sensor)
+    const tables = this.parseTable(parsedSensor)
+    const parsedMetric = this.parseMetric(parsedRequest.metric, tables)
     const parsedRange = this.parseRange(parsedRequest.range, parsedSensor, time_range)
 
     return {
@@ -55,18 +53,17 @@ export default class SensorService extends BaseService {
     }
   }
 
-  parseDataResponse(data: any) {
-    let parsedData: any = {}
-    Object.keys(data).forEach(key => {
-      parsedData[key] = []
-      data[key].forEach((d: any) => {
-        parsedData[key].push(this.parseData(d))
-      })
-    })
+  private parseDataResponse(data: any) {
+    const parsedData = Object.fromEntries( // convert array to object using Object.fromEntries
+      Object.entries(data).map(([key, value]) => [
+        key.replace('_', ''),
+        (value as any).map((d: any) => this.parseData(d)),
+      ])
+    );
     return parsedData
   }
 
-  parseData(data: any) {
+  private parseData(data: any) {
     let parsedData: any = {}
 
     Object.keys(data).forEach(key => {
@@ -80,7 +77,7 @@ export default class SensorService extends BaseService {
     return parsedData
   }
 
-  getDate(day: any, hour: any) {
+  private getDate(day: any, hour: any) {
     let time: any
     if (day) {
       time = DateTime.fromISO(day.toISOString(), { zone: 'Asia/Jakarta' }).day
@@ -90,20 +87,20 @@ export default class SensorService extends BaseService {
     return time
   }
 
-  getData(data: any, key: string) {
-    let parsedData = Math.round(parseFloat(data))
+  private getData(data: any, key: string) {
+    let parsedData = parseFloat(data) / 100
 
-    if (key.includes('vici')) {
-      parsedData = parsedData / 100
-    } else  if (key.includes('ph')) {
-      parsedData = parsedData / 10
+    if (key.includes('nitrogen') || key.includes('phosphorus') || key.includes('potassium')) {
+      parsedData = parsedData
     } else {
-      parsedData = parsedData / 100
+      parsedData = parsedData / 10
+      parsedData = Number(parsedData.toFixed(2))
     }
+    // return Number(parsedData.toFixed(2))
     return parsedData
   }
 
-  parseRequest(data: any) {
+  private parseRequest(data: any) {
     if (data) {
       let parsedRequest: any = {}
       Object.keys(data).forEach(key => {
@@ -117,45 +114,46 @@ export default class SensorService extends BaseService {
     }
   }
 
-  parseSensor(data: any, allowedSensor: any) {
+  private parseSensor(data: any) {
     if (data) {
       let parsedSensor: any = {}
-      data.forEach((d: any) => {
-        if (allowedSensor[d]) {
-          parsedSensor[d] = allowedSensor[d]
+      data.forEach((d: string) => {
+        let key = Object.keys(SENSOR).find(key => SENSOR[key] === d) as string // get the key from the value
+        if (SENSOR[key]) {
+          parsedSensor[key] = SENSOR[key]
         }
       })
       return parsedSensor
     } else {
-      return allowedSensor
+      return SENSOR
     }
   }
 
-  parseTable(data: any, allowedTable: any) {
+  private parseTable(data: any) {
     let tables: any = {}
     Object.keys(data).forEach(key => {
-      Object.keys(allowedTable).forEach(k => {
-        if (key.includes(k)) {
-          tables[key] = allowedTable[k]
-        }
-      })
+      let table = TABLE[key as keyof typeof TABLE] // powerful typechecking feature
+      if (table) {
+        tables[key] = table
+      }
     })
     return tables
   }
 
-  parseMetric(data: any, sensor: any, metric: any) {
+  private parseMetric(data: any, tables: any) {
     let parsedMetric: any = {}
-    Object.keys(metric).forEach(key => {
-      Object.keys(sensor).forEach(k => {
-        if (k.includes(key)) {
-          parsedMetric[k] = this.getAllowedMetric(metric[key], data)
-        }
-      })
+    Object.keys(tables).forEach(key => {
+      let k = tables[key].replace('s', '')
+      if (k === 'dht') {
+        parsedMetric[key] = this.getAllowedMetric(data, DHT)
+      } else if (k === 'npk') {
+        parsedMetric[key] = this.getAllowedMetric(data, NPK)
+      }
     })
     return parsedMetric
   }
 
-  parseRange(data: any, sensor: any, time_range: string) {
+  private parseRange(data: any, sensor: any, time_range: string) {
     let parsedRange: any = {}
     Object.keys(sensor).forEach(key => {
       parsedRange[key] = this.getRange(data, time_range)
@@ -163,12 +161,13 @@ export default class SensorService extends BaseService {
     return parsedRange
   }
 
-  getAllowedMetric(metric: any, sensor: any) {
+  private getAllowedMetric(data: any, metric: any) {
     let parsedMetric: any = {}
-    if (sensor) {
-      sensor.forEach((d: string) => {
-        if (metric[d]) {
-          parsedMetric[d] = metric[d]
+    if (data) {
+      data.forEach((d: string) => {
+        let key = Object.keys(metric).find(key => metric[key] === d)
+        if (key) {
+          parsedMetric[key] = metric[key]
         }
       })
     }
@@ -178,11 +177,20 @@ export default class SensorService extends BaseService {
     return parsedMetric
   }
 
-  getRange(data: any, time_range: any) {
+  private getRange(data: any, time_range: any) {
     const start = this.getStart(data?.start, data?.end) // ?. is optional chaining to prevent error if data is null
     const end = this.getEnd(data?.end, data?.start)
     const range = this.getRangeType(data?.time_range, time_range)
 
+    const check = (start?.toISO() ?? '') < (end?.toISO() ?? '')
+    // prevent invalid range
+    if (!check) {
+      return {
+        start: end.plus({ millisecond: 1 }), // set to the next day
+        end: start.minus({ millisecond: 1 }), // set to the previous day
+        time_range: range
+      }
+    }
     return {
       start: start,
       end: end,
@@ -190,7 +198,7 @@ export default class SensorService extends BaseService {
     }
   }
 
-  getStart(data: string, end: string) {
+  private getStart(data: string, end: string) {
     if (data) {
       return DateTime.fromISO(data).toUTC()
     } else if (!data && end) {
@@ -200,7 +208,7 @@ export default class SensorService extends BaseService {
     }
   }
 
-  getEnd(data: string, start: string) {
+  private getEnd(data: string, start: string) {
     if (data) {
       return DateTime.fromISO(data).endOf('day').toUTC()
     } else if (!data && start) {
@@ -210,11 +218,36 @@ export default class SensorService extends BaseService {
     }
   }
 
-  getRangeType(data: string, time_range: any) {
+  private getRangeType(data: string, time_range: any) {
     if (data && time_range[data]) {
       return time_range[data]
     } else {
       return time_range['DAILY']
     }
+  }
+
+  public static async handleMessage(data: any, message: any) {
+    let topic: string | undefined
+    let metrics: any
+    if (data === TOPICS.DHT) {
+      topic = Object.keys(TOPICS).find(key => TOPICS[key] === TOPICS.DHT)
+      metrics = DHT
+    } else if (data === TOPICS.NPK_1) {
+      topic = Object.keys(TOPICS).find(key => TOPICS[key] === TOPICS.NPK_1)
+      metrics = NPK
+    } else if (data === TOPICS.NPK_2) {
+      topic = Object.keys(TOPICS).find(key => TOPICS[key] === TOPICS.NPK_2)
+      metrics = NPK
+    }
+    await SensorRepository.storeData(this.transformMessage(JSON.parse(message.toString()), metrics), topic?.toLowerCase())
+  }
+
+  private static transformMessage(data: any, metrics: any) {
+    let transformedData: any = {}
+    Object.values(metrics).forEach((value: string) => {
+      let key = Object.keys(metrics).find(key => metrics[key] === value)?.toLowerCase() as string // powerful typechecking feature
+      transformedData[key] = ((data[value] > 0 || data[value] != null) ? data[value] : 0) // prevent null or negative value
+    })
+    return transformedData
   }
 }
