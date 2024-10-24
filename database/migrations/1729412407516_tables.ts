@@ -1,16 +1,12 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'relays'
+  protected tableName = 'tables'
 
-  public async up() {
+  public async up () {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
-      table.integer('number')
-      table.dateTime('enabled_at').defaultTo(this.now())
-      table.dateTime('disabled_at').nullable()
-      table.boolean('current_status')
-
+      table.string('table_name').notNullable()
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */
@@ -18,7 +14,7 @@ export default class extends BaseSchema {
     })
   }
 
-  public async down() {
+  public async down () {
     this.schema.dropTable(this.tableName)
   }
 }
