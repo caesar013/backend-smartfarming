@@ -11,37 +11,36 @@ export default class RelayService extends BaseService {
 
     let success = true;
 
-      if(state == 1){
-        const relay = await this.repository.get(number);
+    if (state == 1) {
+      const relay = await this.repository.get(number);
 
-        if(relay){
-          return {
-            success: false,
-            message: 'Relay already enabled!'
-          };
-        }
-
-        await this.repository.create(number, true);
-      } else {
-        const relay = await this.repository.get(number);
-
-        if(relay){
-          await this.repository.update(relay, false);
-        }
+      if (relay) {
+        return {
+          success: false,
+          message: 'Relay already enabled!'
+        };
       }
 
-      client.publish(`smartfarming/relay`, JSON.stringify({ number, state }), (e) => {
-        if(e){
-          success = false
-        }
-      });
-      return {
-        success
-      };
+      await this.repository.create(number, true);
+    } else {
+      const relay = await this.repository.get(number);
+
+      if (relay) {
+        await this.repository.update(relay, false);
+      }
+    }
+
+    client.publish(`relay${number}`, `${state}`, (e) => {
+      if (e) {
+        success = false
+      }
+    });
+    return {
+      success
+    };
   }
 
-  public async getStatus(){
+  public async getStatus() {
     return this.repository.getStatus();
   }
 }
-    
