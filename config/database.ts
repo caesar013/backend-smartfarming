@@ -43,7 +43,6 @@ const databaseConfig: DatabaseConfig = {
         database: Env.get('PG_DB_NAME'),
         ssl: {
           rejectUnauthorized: false,
-          ca: Env.get('PG_SSL_KEY'),
         },
       },
       migrations: {
