@@ -68,8 +68,12 @@ export default class SensorService extends BaseService {
 
     Object.keys(data).forEach(key => {
       if (key === 'day' || key === 'hour') {
-        let date = this.getDate(data.day, data.hour)
-        parsedData[key] = date
+        let time = this.getTime(data.day, data.hour)
+        let date = data.day ?? data.hour
+        date = DateTime.fromISO(date.toISOString(), { zone: 'Asia/Jakarta' }).toISODate()
+
+        parsedData[key] = time
+        parsedData['date'] = date
       } else {
         parsedData[key] = this.getData(data[key], key)
       }
@@ -77,7 +81,7 @@ export default class SensorService extends BaseService {
     return parsedData
   }
 
-  private getDate(day: any, hour: any) {
+  private getTime(day: any, hour: any) {
     let time: any
     if (day) {
       time = DateTime.fromISO(day.toISOString(), { zone: 'Asia/Jakarta' }).day
@@ -96,7 +100,6 @@ export default class SensorService extends BaseService {
       parsedData = parsedData / 10
       parsedData = Number(parsedData.toFixed(2))
     }
-    // return Number(parsedData.toFixed(2))
     return parsedData
   }
 
