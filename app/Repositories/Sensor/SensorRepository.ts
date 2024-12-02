@@ -120,7 +120,7 @@ export default class SensorRepository extends BaseRepository {
           data_avg[key] = parseInt(String((averages[key] / totalEntries) * 100)) // to convert float to int with 2 decimal places
         })
         data_avg['sensor_id'] = sensor.id
-        data_avg['createdAt'] = DateTime.now().set({ minute: 0, second: 0, millisecond: 0 }).toUTC()
+        data_avg['createdAt'] = DateTime.utc()
 
         if (table === TABLE.NPK_1.toLowerCase()) {
           await Npk.create(data_avg)
