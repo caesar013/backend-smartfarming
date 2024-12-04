@@ -30,6 +30,9 @@ export default class Npk extends BaseModel {
   @column()
   public sensor_id: number
 
+  @column()
+  public readAt: DateTime
+
   @belongsTo(() => Sensor, {
     foreignKey: 'sensor_id',
   })
