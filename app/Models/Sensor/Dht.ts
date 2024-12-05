@@ -18,7 +18,7 @@ export default class Dht extends BaseModel {
   @column()
   public sensor_id: number
 
-  @column()
+  @column.dateTime()
   public readAt: DateTime
 
   @belongsTo(() => Sensor, {
@@ -26,7 +26,7 @@ export default class Dht extends BaseModel {
   })
   public sensor: BelongsTo<typeof Sensor>
 
-  @column()
+  @column.dateTime()
   public createdAt: DateTime
 
   static get table() {
