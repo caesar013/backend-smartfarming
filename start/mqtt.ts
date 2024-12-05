@@ -1,4 +1,3 @@
-import { TOPICS } from "App/Enums/TOPICS";
 import Env from '@ioc:Adonis/Core/Env'
 import SensorService from "App/Services/Sensor/SensorService";
 import mqtt from "mqtt";
@@ -16,9 +15,7 @@ const client = mqtt.connect(`mqtt://${Env.get('MQTT_URL')}`, {
 client.on('connect', () => {
   console.log('MQTT BROKER CONNECTED!');
 
-  Object.values(TOPICS).forEach(topic => {
-    client.subscribeAsync(topic)
-  })
+  client.subscribeAsync('farm/sensor')
 
   client.on('message', async (topic, message) => {
     await SensorService.handleMessage(topic, message)
