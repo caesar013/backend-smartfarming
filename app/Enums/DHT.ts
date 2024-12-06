@@ -3,4 +3,5 @@ export enum DHT {
   TEMPERATURE = 'viciTemperature',
   HUMIDITY = 'viciHumidity',
   LUMINOSITY = 'viciLuminosity',
+  READ_AT = 'time',
 }

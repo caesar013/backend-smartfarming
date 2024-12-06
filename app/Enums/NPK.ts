@@ -7,5 +7,6 @@ export enum NPK {
   NITROGEN = 'soilNitrogen',
   PHOSPHORUS = 'soilPhosphorus',
   POTASSIUM = 'soilPotassium',
+  READ_AT = 'time',
 }
 
