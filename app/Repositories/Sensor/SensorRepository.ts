@@ -96,11 +96,9 @@ export default class SensorRepository extends BaseRepository {
 
     try {
       if (table === TABLE.NPK_1.toLowerCase()) {
-        const npk = await Npk.create(data)
-        console.log('Data inserted: ', npk);
+        await Npk.create(data)
       } else if (table === TABLE.DHT.toLowerCase()) {
-        const dht = await Dht.create(data)
-        console.log('Data inserted: ', dht);
+        await Dht.create(data)
       }
     } catch (e) {
       console.log('Error inserting data. Message: ', e.message);
