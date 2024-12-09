@@ -16,9 +16,8 @@ client.on('connect', () => {
   console.log('MQTT BROKER CONNECTED!');
 
   client.subscribeAsync('farm/sensor')
-
-  client.on('message', async (topic, message) => {
-    await SensorService.handleMessage(topic, message)
+  client.on('message', async (_, message) => {
+    await SensorService.handleMessage(JSON.parse(message.toString()))
   })
 });
 

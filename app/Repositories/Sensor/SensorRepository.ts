@@ -88,49 +88,22 @@ export default class SensorRepository extends BaseRepository {
     }
   }
 
-  static draft = {
-    npk_1: [] as any,
-    npk_2: [] as any,
-    dht: [] as any
-  }
-
   public static async storeData(data: any, sensor_key: any) {
     const sensor = await Sensor.findByOrFail('sensor_name', sensor_key);
     const table = TABLE[sensor_key.toUpperCase()]
+    data['sensor_id'] = sensor.id
+    data['createdAt'] = DateTime.utc()
 
-
-    if ((DateTime.now().minute % 10) != 0) {
-      this.draft[sensor_key].push(data)
-    } else {
-      if (this.draft[sensor_key].length === 0) { // if draft is empty when the minute is even
-        this.draft[sensor_key].push(data)
-        return
+    try {
+      if (table === TABLE.NPK_1.toLowerCase()) {
+        const npk = await Npk.create(data)
+        console.log('Data inserted: ', npk);
+      } else if (table === TABLE.DHT.toLowerCase()) {
+        const dht = await Dht.create(data)
+        console.log('Data inserted: ', dht);
       }
-      try {
-        const totalEntries = this.draft[sensor_key].length;
-        let averages: any = {}
-        let data_avg: any = {}
-
-        Object.values(this.draft[sensor_key]).forEach((entry: any) => {
-          Object.keys(entry).forEach((key: any) => {
-            averages[key] = (averages[key] || 0) + entry[key] // sum all values
-          })
-        })
-        Object.keys(averages).forEach((key: any) => {
-          data_avg[key] = parseInt(String((averages[key] / totalEntries) * 100)) // to convert float to int with 2 decimal places
-        })
-        data_avg['sensor_id'] = sensor.id
-        data_avg['createdAt'] = DateTime.utc()
-
-        if (table === TABLE.NPK_1.toLowerCase()) {
-          await Npk.create(data_avg)
-        } else if (table === TABLE.DHT.toLowerCase()) {
-          await Dht.create(data_avg)
-        }
-        this.draft[sensor_key] = [] // clear draft
-      } catch (e) {
-        console.log('Error inserting data. Message: ', e.message);
-      }
+    } catch (e) {
+      console.log('Error inserting data. Message: ', e.message);
     }
   }
 }

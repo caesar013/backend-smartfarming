@@ -1,7 +1,6 @@
 import BaseService from "App/Base/Services/BaseService"
 import { DHT } from "App/Enums/DHT"
 import { NPK } from "App/Enums/NPK"
-import { TOPICS } from "App/Enums/TOPICS"
 import { SENSOR } from "App/Enums/SENSOR"
 import { TABLE } from "App/Enums/TABLE"
 import SensorRepository from "App/Repositories/Sensor/SensorRepository"
@@ -229,27 +228,31 @@ export default class SensorService extends BaseService {
     }
   }
 
-  public static async handleMessage(data: any, message: any) {
-    let topic: string | undefined
-    let metrics: any
-    if (data === TOPICS.DHT) {
-      topic = Object.keys(TOPICS).find(key => TOPICS[key] === TOPICS.DHT)
-      metrics = DHT
-    } else if (data === TOPICS.NPK_1) {
-      topic = Object.keys(TOPICS).find(key => TOPICS[key] === TOPICS.NPK_1)
-      metrics = NPK
-    } else if (data === TOPICS.NPK_2) {
-      topic = Object.keys(TOPICS).find(key => TOPICS[key] === TOPICS.NPK_2)
-      metrics = NPK
-    }
-    await SensorRepository.storeData(this.transformMessage(JSON.parse(message.toString()), metrics), topic?.toLowerCase())
+  public static async handleMessage(data: any) {
+    let transformedData: any = {}
+    Object.keys(data).forEach(async key => {
+      if (key.toLowerCase() === SENSOR.DHT) {
+        transformedData = await this.transformMessage(data[key], DHT)
+      } else if (key.toLowerCase() === SENSOR.NPK_1 || key.toLowerCase() === SENSOR.NPK_2) {
+        transformedData = await this.transformMessage(data[key], NPK)
+      }
+      const sensor = Object.keys(SENSOR).find(k => SENSOR[k as keyof typeof SENSOR] === key)?.toLowerCase();
+      await SensorRepository.storeData(transformedData, sensor)
+    })
   }
 
-  private static transformMessage(data: any, metrics: any) {
+  private static async transformMessage(data: any, metrics: any) {
     let transformedData: any = {}
     Object.values(metrics).forEach((value: string) => {
       let key = Object.keys(metrics).find(key => metrics[key] === value)?.toLowerCase() as string // powerful typechecking feature
-      transformedData[key] = ((data[value] > 0 || data[value] != null) ? data[value] : 0) // prevent null or negative value
+      transformedData[key] =
+        (typeof data[value] === 'number')
+          ? ((data[value] > 0 || data[value] != null) ? data[value] : 0)
+          : (typeof data[value] === 'string' ? data[value] : null);
+      if (key === 'read_at') {
+        let formatDate = 'yyyy-MM-dd HH:mm:ss'
+        transformedData[key] = data[value] != null ? DateTime.fromFormat(data[value], formatDate, { zone: 'Asia/Jakarta' }) : DateTime.now().toFormat(formatDate)
+      }
     })
     return transformedData
   }
