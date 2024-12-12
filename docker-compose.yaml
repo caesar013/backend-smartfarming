@@ -1,4 +1,18 @@
 services:
+  postgres:
+    image: postgres:17-bullseye
+    container_name: sm-postgres
+    ports:
+      - "${PG_PORT}:${PG_PORT}"
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB_NAME}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+
   be:
     build:
       context: .
@@ -23,15 +37,17 @@ services:
             - .md
             - .env
     ports:
-      - "5000:3333"
+      - "${PORT}:${PORT}"
     environment:
       NODE_ENV: ${NODE_ENV}
-      PORT: ${PORT}
       POSTGRES_HOST: ${PG_HOST}
       POSTGRES_PORT: ${PG_PORT}
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASSWORD}
       POSTGRES_DB: ${PG_DB_NAME}
-      TZ: "Asia/Jakarta"
+      TZ: ${TZ}
     env_file:
       - ./.env
+
+volumes:
+  postgres-data:
