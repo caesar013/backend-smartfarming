@@ -230,12 +230,14 @@ export default class SensorService extends BaseService {
 
   public static async handleMessage(data: any) {
     let transformedData: any = {}
+    let time = data['time']
     Object.keys(data).forEach(async key => {
       if (key.toLowerCase() === SENSOR.DHT) {
         transformedData = await this.transformMessage(data[key], DHT)
       } else if (key.toLowerCase() === SENSOR.NPK_1 || key.toLowerCase() === SENSOR.NPK_2) {
         transformedData = await this.transformMessage(data[key], NPK)
       }
+      transformedData['read_at'] = time
       const sensor = Object.keys(SENSOR).find(k => SENSOR[k as keyof typeof SENSOR] === key)?.toLowerCase();
       await SensorRepository.storeData(transformedData, sensor)
     })
@@ -245,14 +247,7 @@ export default class SensorService extends BaseService {
     let transformedData: any = {}
     Object.values(metrics).forEach((value: string) => {
       let key = Object.keys(metrics).find(key => metrics[key] === value)?.toLowerCase() as string // powerful typechecking feature
-      transformedData[key] =
-        (typeof data[value] === 'number')
-          ? ((data[value] > 0 || data[value] != null) ? data[value] : 0)
-          : (typeof data[value] === 'string' ? data[value] : null);
-      if (key === 'read_at') {
-        let formatDate = 'yyyy-MM-dd HH:mm:ss'
-        transformedData[key] = data[value] != null ? DateTime.fromFormat(data[value], formatDate, { zone: 'Asia/Jakarta' }) : DateTime.now().toFormat(formatDate)
-      }
+      transformedData[key] = (data[value] > 0 || data[value] != null) ? data[value] : 0;
     })
     return transformedData
   }
