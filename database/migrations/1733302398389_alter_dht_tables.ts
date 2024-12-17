@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.float('temperature', 3).alter()
       table.float('humidity', 3).alter()
       table.float('luminosity', 3).alter()
-      table.dateTime('read_at').nullable()
+      table.dateTime('read_at', { useTz: false }).nullable()
     })
   }
 
