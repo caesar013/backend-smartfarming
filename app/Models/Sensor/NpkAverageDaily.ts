@@ -33,8 +33,12 @@ export default class NpkAverageDaily extends BaseModel {
   @belongsTo(() => Sensor, {
     foreignKey: 'sensorId',
   })
-    public sensor: BelongsTo<typeof Sensor>
+  public sensor: BelongsTo<typeof Sensor>
 
   @column.dateTime()
   public createdAt: DateTime
+
+  static get table() {
+    return 'npk_average_dailies'
+  }
 }
