@@ -10,7 +10,13 @@ export default class extends BaseSeeder {
       },
       {
         table_name: 'npks'
-      }
+      },
+      {
+        table_name: 'dht_average_dailies'
+      },
+      {
+        table_name: 'npk_average_dailies'
+      },
     ])
   }
 }
