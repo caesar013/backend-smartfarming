@@ -7,15 +7,15 @@ export default class extends BaseSeeder {
      * Do not run when not in a environment specified in Seeder
      */
     if (
-      (!Seeder.default.environment.includes('development') && Application.inDev)
-      || (!Seeder.default.environment.includes('testing') && Application.inTest)
+      (!Application.inDev)
+      || (!Application.inTest)
     ) {
       return
     }
 
     await new Seeder.default(this.client).run()
   }
-  public async run () {
+  public async run() {
     // Write your database queries inside the run method
     await this.runSeeder(await import('Database/seeders/Table'))
     await this.runSeeder(await import('Database/seeders/Role'))
