@@ -5,8 +5,7 @@ import { DateTime } from "luxon";
 import { NPK } from "App/Enums/NPK";
 import { DHT } from "App/Enums/DHT";
 import { TABLE } from "App/Enums/TABLE";
-import Npk from "App/Models/Sensor/Npk";
-import Dht from "App/Models/Sensor/Dht";
+import { SENSOR } from "App/Enums/SENSOR";
 
 export default class SensorRepository extends BaseRepository {
   constructor() {
@@ -95,13 +94,74 @@ export default class SensorRepository extends BaseRepository {
     data['createdAt'] = DateTime.utc()
 
     try {
-      if (table === TABLE.NPK_1.toLowerCase()) {
-        await Npk.create(data)
-      } else if (table === TABLE.DHT.toLowerCase()) {
-        await Dht.create(data)
-      }
+      await db.table(table).insert(data)
     } catch (e) {
       console.log('Error inserting data. Message: ', e.message);
     }
   }
+
+  public static async storeDataByRange(range: string) {
+    try {
+      if (range === 'hourly') {
+        await this.getHourlyData()
+      } else if (range === 'daily') {
+        await this.getDailyData()
+      }
+    } catch (error) {
+      console.log('Error storing data. Message: ', error.message);
+    }
+  }
+
+  private static async getHourlyData() {
+    const start = DateTime.utc().minus({ hours: 1 }).startOf('hour').toUTC()
+    const end = DateTime.utc().startOf('hour').toUTC()
+    await this.getAverage(start, end, 'hourly')
+  }
+
+  private static async getDailyData() {
+    const start = DateTime.utc().minus({ days: 1 }).startOf('day').toUTC()
+    const end = DateTime.utc().startOf('day').toUTC()
+    await this.getAverage(start, end, 'daily')
+  }
+
+  private static async getAverage(start: any, end: any, range: string) {
+    let data: any = {}
+    for (const key of Object.keys(SENSOR)) {
+      let sensor_key = key + '_' + range.toUpperCase()
+      let table = TABLE[sensor_key]
+      let metrics = key.toLowerCase() === 'dht' ? DHT : NPK
+      data = await this.averageQuery(table, metrics, start, end)
+      await this.storeAveragedData(data, key.toLowerCase(), table)
+    }
+  }
+
+  private static async averageQuery(table: string, metrics: any, start: any, end: any) {
+    try {
+      let query = db.query().from(table)
+      Object.keys(metrics).forEach(key => {
+        key = key.toLowerCase()
+        if (key === 'read_at') {
+          return
+        }
+        query = query.select(db.raw(`avg(${key}) as ${key}`))
+      })
+      query = query.whereBetween('read_at', [start, end])
+      return await query
+    } catch (error) {
+      throw error
+    }
+  }
+  
+  private static async storeAveragedData(data: any, sensor_key: any, table: any) {
+    const sensor = await Sensor.findByOrFail('sensor_name', sensor_key)
+    data['sensor_id'] = sensor.id
+    data['created_at'] = DateTime.utc()
+
+    try {
+      await db.table(table).insert(data)
+    } catch (e) {
+      console.log('Error inserting data. Message: ', e.message);
+    }
+  }
+
 }
