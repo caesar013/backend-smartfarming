@@ -113,14 +113,14 @@ export default class SensorRepository extends BaseRepository {
   }
 
   private static async getHourlyData() {
-    const start = DateTime.utc().minus({ hours: 1 }).startOf('hour').toUTC()
-    const end = DateTime.utc().startOf('hour').toUTC()
+    const start = DateTime.now().minus({ hours: 1 }).startOf('hour').toFormat('yyyy-MM-dd HH:mm:ss')
+    const end = DateTime.now().startOf('hour').toFormat('yyyy-MM-dd HH:mm:ss')
     await this.getAverage(start, end, 'hourly')
   }
 
   private static async getDailyData() {
-    const start = DateTime.utc().minus({ days: 1 }).startOf('day').toUTC()
-    const end = DateTime.utc().startOf('day').toUTC()
+    const start = DateTime.now().minus({ days: 1 }).startOf('day').toFormat('yyyy-MM-dd HH:mm:ss')
+    const end = DateTime.now().startOf('day').toFormat('yyyy-MM-dd HH:mm:ss')
     await this.getAverage(start, end, 'daily')
   }
 
