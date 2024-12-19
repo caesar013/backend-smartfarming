@@ -128,10 +128,11 @@ export default class SensorRepository extends BaseRepository {
     let data: any = {}
     for (const key of Object.keys(SENSOR)) {
       let sensor_key = key + '_' + range.toUpperCase()
-      let table = TABLE[sensor_key]
+      let table_select = TABLE[key]
+      let table_insert = TABLE[sensor_key]
       let metrics = key.toLowerCase() === 'dht' ? DHT : NPK
-      data = await this.averageQuery(table, metrics, start, end)
-      await this.storeAveragedData(data, key.toLowerCase(), table)
+      data = await this.averageQuery(table_select, metrics, start, end)
+      await this.storeAveragedData(data, key.toLowerCase(), table_insert)
     }
   }
 
