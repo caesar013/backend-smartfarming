@@ -113,14 +113,14 @@ export default class SensorRepository extends BaseRepository {
   }
 
   private static async getHourlyData() {
-    const start = DateTime.now().minus({ hours: 1 }).startOf('hour').toFormat('yyyy-MM-dd HH:mm:ss')
-    const end = DateTime.now().startOf('hour').toFormat('yyyy-MM-dd HH:mm:ss')
+    const start = DateTime.local({ zone: 'Asia/Jakarta' }).minus({ hours: 1 }).startOf('hour').toFormat('yyyy-MM-dd HH:mm:ss')
+    const end = DateTime.local({ zone: 'Asia/Jakarta' }).startOf('hour').toFormat('yyyy-MM-dd HH:mm:ss')
     await this.getAverage(start, end, 'hourly')
   }
 
   private static async getDailyData() {
-    const start = DateTime.now().minus({ days: 1 }).startOf('day').toFormat('yyyy-MM-dd HH:mm:ss')
-    const end = DateTime.now().startOf('day').toFormat('yyyy-MM-dd HH:mm:ss')
+    const start = DateTime.local({ zone: 'Asia/Jakarta' }).minus({ days: 1 }).startOf('day').toFormat('yyyy-MM-dd HH:mm:ss')
+    const end = DateTime.local({ zone: 'Asia/Jakarta' }).startOf('day').toFormat('yyyy-MM-dd HH:mm:ss')
     await this.getAverage(start, end, 'daily')
   }
 
@@ -158,6 +158,7 @@ export default class SensorRepository extends BaseRepository {
     data['sensor_id'] = sensor.id
     data['created_at'] = DateTime.utc()
 
+    // console.log('Data: ', data);
     try {
       await db.table(table).insert(data)
     } catch (e) {
