@@ -91,7 +91,7 @@ export default class SensorRepository extends BaseRepository {
     const sensor = await Sensor.findByOrFail('sensor_name', sensor_key);
     const table = TABLE[sensor_key.toUpperCase()]
     data['sensor_id'] = sensor.id
-    data['createdAt'] = DateTime.utc()
+    data['created_at'] = DateTime.utc()
 
     try {
       await db.table(table).insert(data)
@@ -151,7 +151,7 @@ export default class SensorRepository extends BaseRepository {
       throw error
     }
   }
-  
+
   private static async storeAveragedData(data: any, sensor_key: any, table: any) {
     const sensor = await Sensor.findByOrFail('sensor_name', sensor_key)
     data['sensor_id'] = sensor.id
