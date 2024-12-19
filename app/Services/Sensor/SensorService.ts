@@ -236,6 +236,8 @@ export default class SensorService extends BaseService {
         transformedData = await this.transformMessage(data[key], DHT)
       } else if (key.toLowerCase() === SENSOR.NPK_1 || key.toLowerCase() === SENSOR.NPK_2) {
         transformedData = await this.transformMessage(data[key], NPK)
+      } else {
+        return
       }
       transformedData['read_at'] = time
       const sensor = Object.keys(SENSOR).find(k => SENSOR[k as keyof typeof SENSOR] === key)?.toLowerCase();
