@@ -27,7 +27,7 @@ export default class Dht extends BaseModel {
   public sensor: BelongsTo<typeof Sensor>
 
   @column.dateTime()
-  public createdAt: DateTime
+  public created_at: DateTime
 
   static get table() {
     return "public.dhts" // table name
