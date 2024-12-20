@@ -127,12 +127,13 @@ export default class SensorRepository extends BaseRepository {
   private static async getAverage(start: any, end: any, range: string) {
     let data: any = {}
     for (const key of Object.keys(SENSOR)) {
+      const sensor = await Sensor.findByOrFail('sensor_name', key.toLowerCase())
       let sensor_key = key + '_' + range.toUpperCase()
       let table_select = TABLE[key]
       let table_insert = TABLE[sensor_key]
-      let metrics = key.toLowerCase() === 'dht' ? DHT : NPK
-      data = await this.averageQuery(table_select, metrics, start, end)
-      await this.storeAveragedData(await this.parseToInt(data), key.toLowerCase(), table_insert)
+      let metrics = sensor.sensor_name === 'dht' ? DHT : NPK
+      data = await this.averageQuery(table_select, sensor.id, metrics, start, end)
+      await this.storeAveragedData(await this.parseToInt(data), sensor.id, table_insert)
     }
   }
 
@@ -149,7 +150,7 @@ export default class SensorRepository extends BaseRepository {
     return res
   }
 
-  private static async averageQuery(table: string, metrics: any, start: any, end: any) {
+  private static async averageQuery(table: string, sensor: number, metrics: any, start: any, end: any) {
     try {
       let query = db.query().from(table)
       Object.keys(metrics).forEach(key => {
@@ -159,6 +160,7 @@ export default class SensorRepository extends BaseRepository {
         }
         query = query.select(db.raw(`avg(${key}) as ${key}`))
       })
+      query = query.where('sensor_id', sensor)
       query = query.whereBetween('read_at', [start, end])
       return await query
     } catch (error) {
@@ -166,12 +168,10 @@ export default class SensorRepository extends BaseRepository {
     }
   }
 
-  private static async storeAveragedData(data: any, sensor_key: any, table: any) {
-    const sensor = await Sensor.findByOrFail('sensor_name', sensor_key)
-    data['sensor_id'] = sensor.id
+  private static async storeAveragedData(data: any, sensor_id: number, table: any) {
+    data['sensor_id'] = sensor_id
     data['created_at'] = DateTime.utc()
 
-    console.log('Data: ', data);
     try {
       await db.table(table).insert(data)
     } catch (e) {
