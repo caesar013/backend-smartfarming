@@ -245,7 +245,7 @@ export default class SensorService extends BaseService {
     })
     if (DateTime.utc().minute === 0 && (DateTime.utc().second >= 0 && DateTime.utc().second <= 10)) {
       await SensorRepository.storeDataByRange('hourly')
-      if (DateTime.utc().hour === 0) {
+      if (DateTime.local({ zone: 'Asia/Jakarta' }).hour === 0) {
         await SensorRepository.storeDataByRange('daily')
       }
     }
