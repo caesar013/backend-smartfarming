@@ -243,9 +243,9 @@ export default class SensorService extends BaseService {
       const sensor = Object.keys(SENSOR).find(k => SENSOR[k as keyof typeof SENSOR] === key)?.toLowerCase();
       await SensorRepository.storeData(transformedData, sensor)
     })
-    if (DateTime.utc().minute === 50 && (DateTime.utc().second >= 0 && DateTime.utc().second <= 10)) {
+    if (DateTime.utc().minute === 0 && (DateTime.utc().second >= 0 && DateTime.utc().second <= 10)) {
       await SensorRepository.storeDataByRange('hourly')
-      if (DateTime.local({ zone: 'Asia/Jakarta' }).hour === 9) {
+      if (DateTime.local({ zone: 'Asia/Jakarta' }).hour === 0) {
         await SensorRepository.storeDataByRange('daily')
       }
     }
