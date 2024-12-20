@@ -132,8 +132,21 @@ export default class SensorRepository extends BaseRepository {
       let table_insert = TABLE[sensor_key]
       let metrics = key.toLowerCase() === 'dht' ? DHT : NPK
       data = await this.averageQuery(table_select, metrics, start, end)
-      await this.storeAveragedData(data, key.toLowerCase(), table_insert)
+      await this.storeAveragedData(await this.parseToInt(data), key.toLowerCase(), table_insert)
     }
+  }
+
+  private static async parseToInt(data: any) {
+    let res: any = {}
+    Object.keys(data[0]).forEach(key => {
+      // parse float to int
+      if (key === 'ph') {
+        res[key] = parseInt((data[0][key] * 10) + '')
+        return
+      }
+      res[key] = parseInt((data[0][key] * 100) + '')
+    })
+    return res
   }
 
   private static async averageQuery(table: string, metrics: any, start: any, end: any) {
@@ -158,7 +171,7 @@ export default class SensorRepository extends BaseRepository {
     data['sensor_id'] = sensor.id
     data['created_at'] = DateTime.utc()
 
-    // console.log('Data: ', data);
+    console.log('Data: ', data);
     try {
       await db.table(table).insert(data)
     } catch (e) {
