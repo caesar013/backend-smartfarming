@@ -31,8 +31,10 @@ export default class SensorRepository extends BaseRepository {
         } else if (table[key] === 'npks') {
           keys = Object.keys(NPK).map(key => key.toLowerCase()) // get keys and convert to lowercase
           values = Object.values(NPK)
+        } else {
+          continue
         }
-        res[key.toLowerCase()] = await this.queryLatest(key.toLowerCase(), table[key], keys, values)
+        res[key.toLowerCase()] = (await this.queryLatest(key.toLowerCase(), table[key], keys, values))[0]
       }
       return res
     } catch (error) {
@@ -45,6 +47,9 @@ export default class SensorRepository extends BaseRepository {
       const s = await Sensor.findByOrFail('sensor_name', sensor)
       let query = db.query().from(table)
       keys.forEach((key: any, index: number) => {
+        if (key === 'read_at') {
+          return
+        }
         query = query.select(db.raw(`${key} as ${values[index]}`))
       })
       query = query.where('sensor_id', s.id).orderBy('created_at', 'desc').limit(1)

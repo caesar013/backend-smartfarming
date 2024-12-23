@@ -13,7 +13,8 @@ export default class SensorService extends BaseService {
 
   async getAll(options: any) {
     try {
-      return await this.repository.getAll(options.sensor, options.table, options.metric, options.range)
+      const res = await this.repository.getAll(options.sensor, options.table, options.metric, options.range)
+      return this.parseResponse(res, 'OK', 200, 'CALCULATED')
     } catch (error) {
       throw error
     }
@@ -21,7 +22,8 @@ export default class SensorService extends BaseService {
 
   async getLatest() {
     try {
-      return await this.repository.getLatest(TABLE)
+      const res = await this.repository.getLatest(TABLE)
+      return this.parseResponse(res, 'OK', 200, 'RAW')
     } catch (error) {
       throw error
     }
@@ -42,8 +44,8 @@ export default class SensorService extends BaseService {
     }
   }
 
-  parseResponse(data: any, message?: string, status?: number) {
-    const parsedResponse = this.parseDataResponse(data)
+  parseResponse(data: any, message?: string, status?: number, type?: string) {
+    const parsedResponse = this.parseDataResponse(data, type === 'RAW' ? true : false)
 
     return {
       data: parsedResponse,
@@ -52,11 +54,11 @@ export default class SensorService extends BaseService {
     }
   }
 
-  private parseDataResponse(data: any) {
+  private parseDataResponse(data: any, type: boolean) {
     const parsedData = Object.fromEntries( // convert array to object using Object.fromEntries
       Object.entries(data).map(([key, value]) => [
         key.replace('_', ''),
-        (value as any).map((d: any) => this.parseData(d)),
+        type ? value : this.parseData(value),
       ])
     );
     return parsedData
