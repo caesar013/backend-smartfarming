@@ -64,6 +64,7 @@ export default class SensorRepository extends BaseRepository {
     try {
       for (const key of Object.keys(sensor)) { // loop through sensor keys using for..of to avoid async issue
         res[key.toLowerCase()] = await this.queryBuilder(key.toLowerCase(), table[key], metric[key], range[key])
+        // console.log(key.toLowerCase(), table[key], metric[key], range[key])
       }
       return res
     } catch (error) {
@@ -77,14 +78,13 @@ export default class SensorRepository extends BaseRepository {
       query = query.from(table)
       query = query.select(db.raw(`date_trunc(\'${range.time_range}\', created_at) as ${range.time_range}`))
       Object.keys(metric).forEach(key => {
-        query = query.select(db.raw(`avg(${key.toLowerCase()}) as ${metric[key]}`))
+        query = query.select(db.raw(`${key.toLowerCase()} as ${metric[key]}`))
       })
       query = query.join(`${this.model.table}`, `${table}.sensor_id`, `${this.model.table}.id`)
       query = query.where('sensor_name', `${sensor}`)
       if (range) {
         query = query.whereBetween('created_at', [range.start, range.end])
       }
-      query = query.groupByRaw(`date_trunc(\'${range.time_range}\', created_at)`)
       query = query.orderBy(`${range.time_range}`, 'asc')
       return await query
     } catch (error) {

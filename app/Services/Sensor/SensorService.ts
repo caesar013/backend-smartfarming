@@ -4,6 +4,7 @@ import { NPK } from "App/Enums/NPK"
 import { SENSOR } from "App/Enums/SENSOR"
 import { TABLE } from "App/Enums/TABLE"
 import SensorRepository from "App/Repositories/Sensor/SensorRepository"
+import { Console } from "console"
 import { DateTime } from "luxon"
 
 export default class SensorService extends BaseService {
@@ -31,10 +32,11 @@ export default class SensorService extends BaseService {
 
   parseParams(data: any, time_range: any) {
     const parsedRequest = this.parseRequest(data)
+    const range = this.parseRangeType(parsedRequest.time_range, time_range)
     const parsedSensor = this.parseSensor(parsedRequest.sensor)
-    const tables = this.parseTable(parsedSensor)
+    const tables = this.parseTable(parsedSensor, range)
     const parsedMetric = this.parseMetric(parsedRequest.metric, tables)
-    const parsedRange = this.parseRange(parsedRequest.range, parsedSensor, time_range)
+    const parsedRange = this.parseRange(parsedRequest.range, parsedSensor, time_range[range])
 
     return {
       sensor: parsedSensor,
@@ -57,20 +59,26 @@ export default class SensorService extends BaseService {
   private parseDataResponse(data: any, type: boolean) {
     const parsedData = Object.fromEntries( // convert array to object using Object.fromEntries
       Object.entries(data).map(([key, value]) => [
-        key.replace('_', ''),
-        type ? value : this.parseData(value),
+        key.replace('_', ''), // modify the key
+        type ? value :
+          Array.isArray(value) ?
+            value.map((item: any) => this.parseData(item)) :
+            this.parseData(value), // conditionally transform the value
       ])
     );
     return parsedData
   }
 
   private parseData(data: any) {
+    // console.log('data: ', data)
     let parsedData: any = {}
 
     Object.keys(data).forEach(key => {
+      console.log('key: ', key)
       if (key === 'day' || key === 'hour') {
         let time = this.getTime(data.day, data.hour)
         let date = data.day ?? data.hour
+        console.log(time, date)
         date = DateTime.fromISO(date.toISOString(), { zone: 'Asia/Jakarta' }).toISODate()
 
         parsedData[key] = time
@@ -95,12 +103,12 @@ export default class SensorService extends BaseService {
   private getData(data: any, key: string) {
     let parsedData = parseFloat(data) / 100
 
-    if (key.includes('nitrogen') || key.includes('phosphorus') || key.includes('potassium')) {
-      parsedData = parsedData
-    } else {
-      parsedData = parsedData / 10
-      parsedData = Number(parsedData.toFixed(2))
-    }
+    // if (key.includes('nitrogen') || key.includes('phosphorus') || key.includes('potassium')) {
+    //   parsedData = parsedData
+    // } else {
+    //   parsedData = parsedData / 10
+    //   parsedData = Number(parsedData.toFixed(2))
+    // }
     return parsedData
   }
 
@@ -133,10 +141,11 @@ export default class SensorService extends BaseService {
     }
   }
 
-  private parseTable(data: any) {
+  private parseTable(data: any, range: string) {
     let tables: any = {}
     Object.keys(data).forEach(key => {
-      let table = TABLE[key as keyof typeof TABLE] // powerful typechecking feature
+      let modifiedKey = key + '_' + range.toUpperCase()
+      let table = TABLE[modifiedKey as keyof typeof TABLE] // powerful typechecking feature
       if (table) {
         tables[key] = table
       }
@@ -147,10 +156,10 @@ export default class SensorService extends BaseService {
   private parseMetric(data: any, tables: any) {
     let parsedMetric: any = {}
     Object.keys(tables).forEach(key => {
-      let k = tables[key].replace('s', '')
-      if (k === 'dht') {
+      let modifiedKey = key.split('_')[0].toLowerCase()
+      if (modifiedKey === 'dht') {
         parsedMetric[key] = this.getAllowedMetric(data, DHT)
-      } else if (k === 'npk') {
+      } else if (modifiedKey === 'npk') {
         parsedMetric[key] = this.getAllowedMetric(data, NPK)
       }
     })
@@ -176,7 +185,12 @@ export default class SensorService extends BaseService {
       })
     }
     if (Object.keys(parsedMetric).length === 0) {
-      return metric
+      return Object.keys(metric)
+        .filter((key) => key !== 'READ_AT')
+        .reduce((result: Record<string, any>, key) => {
+          result[key] = metric[key];
+          return result;
+        }, {});
     }
     return parsedMetric
   }
@@ -184,7 +198,6 @@ export default class SensorService extends BaseService {
   private getRange(data: any, time_range: any) {
     const start = this.getStart(data?.start, data?.end) // ?. is optional chaining to prevent error if data is null
     const end = this.getEnd(data?.end, data?.start)
-    const range = this.getRangeType(data?.time_range, time_range)
 
     const check = (start?.toISO() ?? '') < (end?.toISO() ?? '')
     // prevent invalid range
@@ -192,41 +205,41 @@ export default class SensorService extends BaseService {
       return {
         start: end.plus({ millisecond: 1 }), // set to the next day
         end: start.minus({ millisecond: 1 }), // set to the previous day
-        time_range: range
+        time_range: time_range
       }
     }
     return {
       start: start,
       end: end,
-      time_range: range
+      time_range: time_range
     }
   }
 
   private getStart(data: string, end: string) {
     if (data) {
-      return DateTime.fromISO(data).toUTC()
+      return DateTime.fromISO(data, { zone: 'Asia/Jakarta' }).toUTC()
     } else if (!data && end) {
-      return DateTime.fromISO(end).minus({ days: 7 }).startOf('day').toUTC()
+      return DateTime.fromISO(end, { zone: 'Asia/Jakarta' }).minus({ days: 7 }).startOf('day').toUTC()
     } else {
-      return DateTime.now().minus({ days: 7 }).startOf('day').toUTC()
+      return DateTime.now().setZone('Asia/Jakarta').minus({ days: 7 }).startOf('day').toUTC()
     }
   }
 
   private getEnd(data: string, start: string) {
     if (data) {
-      return DateTime.fromISO(data).endOf('day').toUTC()
+      return DateTime.fromISO(data, { zone: 'Asia/Jakarta' }).endOf('day').toUTC()
     } else if (!data && start) {
-      return DateTime.fromISO(start).plus({ days: 7 }).endOf('day').toUTC()
+      return DateTime.fromISO(start, { zone: 'Asia/Jakarta' }).plus({ days: 7 }).endOf('day').toUTC()
     } else {
-      return DateTime.now().endOf('day').toUTC()
+      return DateTime.now().setZone('Asia/Jakarta').endOf('day').toUTC()
     }
   }
 
-  private getRangeType(data: string, time_range: any) {
+  private parseRangeType(data: string, time_range: any) {
     if (data && time_range[data]) {
-      return time_range[data]
+      return data[0]
     } else {
-      return time_range['DAILY']
+      return 'DAILY'
     }
   }
 
