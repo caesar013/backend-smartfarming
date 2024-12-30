@@ -117,14 +117,14 @@ export default class SensorRepository extends BaseRepository {
   }
 
   private static async getHourlyData() {
-    const start = DateTime.local({ zone: 'Asia/Jakarta' }).minus({ hours: 1 }).startOf('hour').toFormat('yyyy-MM-dd HH:mm:ss')
-    const end = DateTime.local({ zone: 'Asia/Jakarta' }).startOf('hour').toFormat('yyyy-MM-dd HH:mm:ss')
+    const start = DateTime.local({ zone: 'Asia/Jakarta' }).minus({ hours: 1 }).startOf('hour').toUTC()
+    const end = DateTime.local({ zone: 'Asia/Jakarta' }).startOf('hour').toUTC()
     await this.getAverage(start, end, 'hourly')
   }
 
   private static async getDailyData() {
-    const start = DateTime.local({ zone: 'Asia/Jakarta' }).minus({ days: 1 }).startOf('day').toFormat('yyyy-MM-dd HH:mm:ss')
-    const end = DateTime.local({ zone: 'Asia/Jakarta' }).startOf('day').toFormat('yyyy-MM-dd HH:mm:ss')
+    const start = DateTime.local({ zone: 'Asia/Jakarta' }).minus({ days: 1 }).startOf('day').toUTC()
+    const end = DateTime.local({ zone: 'Asia/Jakarta' }).startOf('day').toUTC()
     await this.getAverage(start, end, 'daily')
   }
 
@@ -165,7 +165,7 @@ export default class SensorRepository extends BaseRepository {
         query = query.select(db.raw(`avg(${key}) as ${key}`))
       })
       query = query.where('sensor_id', sensor)
-      query = query.whereBetween('read_at', [start, end])
+      query = query.whereBetween('created_at', [start, end])
       return await query
     } catch (error) {
       throw error
