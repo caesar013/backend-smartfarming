@@ -64,7 +64,6 @@ export default class SensorRepository extends BaseRepository {
     try {
       for (const key of Object.keys(sensor)) { // loop through sensor keys using for..of to avoid async issue
         res[key.toLowerCase()] = await this.queryBuilder(key.toLowerCase(), table[key], metric[key], range[key])
-        // console.log(key.toLowerCase(), table[key], metric[key], range[key])
       }
       return res
     } catch (error) {

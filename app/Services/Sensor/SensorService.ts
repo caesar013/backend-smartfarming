@@ -4,7 +4,6 @@ import { NPK } from "App/Enums/NPK"
 import { SENSOR } from "App/Enums/SENSOR"
 import { TABLE } from "App/Enums/TABLE"
 import SensorRepository from "App/Repositories/Sensor/SensorRepository"
-import { Console } from "console"
 import { DateTime } from "luxon"
 
 export default class SensorService extends BaseService {
@@ -70,21 +69,18 @@ export default class SensorService extends BaseService {
   }
 
   private parseData(data: any) {
-    // console.log('data: ', data)
     let parsedData: any = {}
 
     Object.keys(data).forEach(key => {
-      console.log('key: ', key)
       if (key === 'day' || key === 'hour') {
         let time = this.getTime(data.day, data.hour)
         let date = data.day ?? data.hour
-        console.log(time, date)
         date = DateTime.fromISO(date.toISOString(), { zone: 'Asia/Jakarta' }).toISODate()
 
         parsedData[key] = time
         parsedData['date'] = date
       } else {
-        parsedData[key] = this.getData(data[key], key)
+        parsedData[key] = this.getData(data[key])
       }
     })
     return parsedData
@@ -100,15 +96,8 @@ export default class SensorService extends BaseService {
     return time
   }
 
-  private getData(data: any, key: string) {
+  private getData(data: any) {
     let parsedData = parseFloat(data) / 100
-
-    // if (key.includes('nitrogen') || key.includes('phosphorus') || key.includes('potassium')) {
-    //   parsedData = parsedData
-    // } else {
-    //   parsedData = parsedData / 10
-    //   parsedData = Number(parsedData.toFixed(2))
-    // }
     return parsedData
   }
 
