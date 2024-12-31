@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
-ARG NODE_IMAGE=node:18.20.5-bullseye
+ARG NODE_IMAGE=node:18.20.5-alpine3.20
 
 FROM $NODE_IMAGE AS base
-RUN apt-get update && apt-get install -y --no-install-recommends dumb-init && rm -rf /var/lib/apt/lists/*
+RUN apk --no-cache add dumb-init
 RUN mkdir -p /home/node/app && chown node:node /home/node/app
 WORKDIR /home/node/app
 USER node
