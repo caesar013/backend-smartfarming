@@ -234,7 +234,6 @@ export default class SensorService extends BaseService {
 
   public static async handleMessage(data: any) {
     let transformedData: any = {}
-    let time = data['time']
     Object.keys(data).forEach(async key => {
       if (key.toLowerCase() === SENSOR.DHT) {
         transformedData = await this.transformMessage(data[key], DHT)
@@ -243,7 +242,6 @@ export default class SensorService extends BaseService {
       } else {
         return
       }
-      transformedData['read_at'] = time
       const sensor = Object.keys(SENSOR).find(k => SENSOR[k as keyof typeof SENSOR] === key)?.toLowerCase();
       await SensorRepository.storeData(transformedData, sensor)
     })
@@ -259,7 +257,7 @@ export default class SensorService extends BaseService {
     let transformedData: any = {}
     Object.values(metrics).forEach((value: string) => {
       let key = Object.keys(metrics).find(key => metrics[key] === value)?.toLowerCase() as string // powerful typechecking feature
-      transformedData[key] = (data[value] > 0 || data[value] != null) ? data[value] : 0;
+      transformedData[key] = (data[value] > 0 && data[value] != null) ? data[value] : 0;
     })
     return transformedData
   }
