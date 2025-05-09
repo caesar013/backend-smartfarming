@@ -22,7 +22,7 @@ CREATE TABLE "user"."account"(
   "id"                uuid            DEFAULT uuid_generate_v4() ,
   "urole_id"          uuid     		    NOT NULL ,
   "username"          VARCHAR(100)    NOT NULL UNIQUE,
-  "pwd"               TEXT        		NOT NULL ,
+  "password"          TEXT            NOT NULL ,
   "email"             VARCHAR(255) 		NOT NULL UNIQUE ,
   "google_id"         VARCHAR(255)    NOT NULL ,
   "fullname"          VARCHAR(100)    NOT NULL ,

@@ -15,10 +15,11 @@ const client = mqtt.connect(`mqtt://${Env.get('MQTT_URL')}`, {
 client.on('connect', () => {
   console.log('MQTT BROKER CONNECTED!');
 
-  client.subscribeAsync('farm/sensor')
+  client.subscribeAsync('farm/sensor');
   client.on('message', async (_, message) => {
-    await SensorService.handleMessage(JSON.parse(message.toString()))
-  })
+	console.log(JSON.parse(message.toString()));
+    await SensorService.handleMessage(JSON.parse(message.toString()));
+  });
 });
 
 client.on('error', (err) => {

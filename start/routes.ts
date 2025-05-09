@@ -20,6 +20,7 @@
 
 import Route from '@ioc:Adonis/Core/Route'
 import fs from 'fs';
+import SensorService from "App/Services/Sensor/SensorService";
 
 Route.group(function () {
   if (fs.existsSync(`${__dirname}/routes`)) {
@@ -52,8 +53,12 @@ Route.get('/', async ({ view }) => {
   return view.render('welcome')
 })
 
-Route.get('/api', async ({ response }) => {
-  return response.api(null, 'It works!')
+Route.get('/api', async () => {
+  return 'Hello World!';
 })
+
+Route.post('/api/iotPost', async ({ request }) => {
+	await SensorService.handleMessage(request.all());
+});
 
 Route.on('*').render('index')
