@@ -13,7 +13,7 @@ export default class AuthService {
   async login (credentials: any, auth: any, rememberMe: boolean) {
     try {
       const user = await this.accountRepository.findByEmail(credentials.email)
-      if (!user || !(await Hash.verify(user.pwd, credentials.password))) {
+      if (!user || !(await Hash.verify(user.password, credentials.password))) {
         throw new DefaultException('Invalid email or password!')
       }
       if (user.is_ban) {
@@ -51,7 +51,7 @@ export default class AuthService {
 
       const user = await this.accountRepository.findByEmail(credential)
       await this.accountRepository.update(user.id, {
-        pwd: await Hash.make(request.pwd)
+        password: await Hash.make(request.password)
       })
     } catch (error) {
       throw error

@@ -9,7 +9,7 @@ export default class AccountController {
   FETCHED_ATTRIBUTE = [
     'urole_id',
     'username',
-    'pwd',
+    'password',
     'email',
     'google_id',
     'fullname',

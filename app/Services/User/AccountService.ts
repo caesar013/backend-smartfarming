@@ -10,8 +10,8 @@ export default class AccountService extends BaseService {
 
   async store(data: any) {
     try {
-      if (data.pwd) {
-        data.pwd = await Hash.make(data.pwd)
+      if (data.password) {
+        data.password = await Hash.make(data.password)
       }
       return await this.repository.store(data)
     } catch (error) {
@@ -59,8 +59,8 @@ export default class AccountService extends BaseService {
 
   async update(id: any, data: any) {
     try {
-      if (data.pwd) {
-        data.pwd = await Hash.make(data.pwd)
+      if (data.password) {
+        data.password = await Hash.make(data.password)
       }
       return await this.repository.update(id, data)
     } catch (error) {

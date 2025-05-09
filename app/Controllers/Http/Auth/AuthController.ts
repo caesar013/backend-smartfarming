@@ -25,7 +25,7 @@ export default class AuthController {
         username: schema.string({}, [
           rules.maxLength(25)
         ]),
-        pwd: schema.string({}, [
+        password: schema.string({}, [
           rules.minLength(8)
         ]),
         email: schema.string({}, [
