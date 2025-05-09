@@ -17,7 +17,7 @@ export default class CreateAccountValidator {
       rules.maxLength(100),
       rules.unique({table: Account.table, column: 'username', where: {deleted_at: null}})
     ]),
-    pwd: schema.string({}, [
+    password: schema.string({}, [
       rules.minLength(6)
     ]),
     email: schema.string({}, [

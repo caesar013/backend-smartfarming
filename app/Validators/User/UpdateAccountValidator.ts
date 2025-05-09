@@ -17,7 +17,7 @@ export default class UpdateAccountValidator {
       rules.maxLength(100),
       rules.unique({table: Account.table, column: 'username', where: {deleted_at: null}, whereNot: {id: this.ctx.params.id}})
     ]),
-    pwd: schema.string.optional({}, [
+    password: schema.string.optional({}, [
       rules.minLength(6)
     ]),
     email: schema.string.optional({}, [
