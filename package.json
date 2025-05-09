@@ -14,7 +14,7 @@
     "@types/uuid": "^8.3.1",
     "adonis-preset-ts": "^2.1.0",
     "pino-pretty": "^5.1.2",
-    "typescript": "^4.2.4",
+    "typescript": "^4.9.5",
     "youch": "^2.2.2",
     "youch-terminal": "^1.1.1"
   },
@@ -34,6 +34,7 @@
     "moment": "^2.29.1",
     "mqtt": "^5.10.1",
     "pg": "^8.7.1",
+    "phc-argon2": "^1.1.4",
     "phc-bcrypt": "^1.0.8",
     "proxy-addr": "^2.0.7",
     "reflect-metadata": "^0.1.13",
