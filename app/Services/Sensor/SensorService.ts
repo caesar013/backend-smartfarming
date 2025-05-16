@@ -31,7 +31,7 @@ export default class SensorService extends BaseService {
 
   parseParams(data: any, time_range: any) {
     const parsedRequest = this.parseRequest(data)
-    const range = this.parseRangeType(parsedRequest.time_range, time_range)
+    const range = this.parseRangeType(parsedRequest.range.time_range, time_range)
     const parsedSensor = this.parseSensor(parsedRequest.sensor)
     const tables = this.parseTable(parsedSensor, range)
     const parsedMetric = this.parseMetric(parsedRequest.metric, tables)
@@ -226,7 +226,7 @@ export default class SensorService extends BaseService {
 
   private parseRangeType(data: string, time_range: any) {
     if (data && time_range[data]) {
-      return data[0]
+      return data
     } else {
       return 'DAILY'
     }
