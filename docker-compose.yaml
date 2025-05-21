@@ -11,6 +11,11 @@ services:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${PG_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./database/sql/boilerplate.sql:/docker-entrypoint-initdb.d/boilerplate.sql # will setup boilerplate data for us
@@ -24,10 +29,11 @@ services:
       target: dependencies
       dockerfile: Dockerfile
     container_name: sf_backend
-    command: node ace serve --watch
+    command: ./dockerConfig/run.sh
     restart: always
     depends_on:
-      - sf_postgres
+      sf_postgres:
+        condition: service_healthy # this will ensure that the database is up and running before starting the backend
     develop:
       watch:
         - action: sync
@@ -43,6 +49,7 @@ services:
       - ./.env
     volumes:
       - ./:/home/node/app
+      - ./dockerConfig/run.sh:/home/node/app/dockerConfig/run.sh
 
 volumes:
   postgres-data:
