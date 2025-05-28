@@ -34,11 +34,6 @@ services:
     depends_on:
       sf_postgres:
         condition: service_healthy # this will ensure that the database is up and running before starting the backend
-    develop:
-      watch:
-        - action: sync
-          path : .
-          target: /home/node/app
     ports:
       - ${PORT}:${PORT}
       - 9229:9229
@@ -50,6 +45,7 @@ services:
     volumes:
       - ./:/home/node/app
       - ./dockerConfig/run.sh:/home/node/app/dockerConfig/run.sh
+      - /home/node/app/node_modules
 
 volumes:
   postgres-data:
