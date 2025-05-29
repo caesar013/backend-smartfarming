@@ -9,5 +9,8 @@ export default class extends BaseSeeder {
     await this.runSeeder(await import('Database/seeders/Table'))
     await this.runSeeder(await import('Database/seeders/Role'))
     await this.runSeeder(await import('Database/seeders/Sensor'))
+    await this.runSeeder(await import('Database/seeders/Plant'))
+    await this.runSeeder(await import('Database/seeders/GrowthStage'))
+    await this.runSeeder(await import('Database/seeders/PlantGrowthNpk'))
   }
 }
