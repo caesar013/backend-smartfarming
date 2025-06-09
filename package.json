@@ -6,8 +6,8 @@
     "build": "node ace build --production",
     "start": "node server.js",
     "dev": "node ace serve --watch",
-    "dockerAttachAdonis": "docker exec -it sf_backend /bin/sh",
-    "dockerAttachPostgres": "docker exec -it sf_postgres /bin/bash"
+    "adonis": "docker exec -it sf_backend /bin/sh",
+    "postgres": "docker exec -it sf_postgres /bin/bash"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^5.3.5",
