@@ -5,7 +5,6 @@ FROM $NODE_IMAGE AS base
 RUN apk --no-cache add dumb-init
 RUN mkdir -p /home/node/app && chown node:node /home/node/app
 WORKDIR /home/node/app
-RUN mkdir -p /home/node/app/adonis_state && chown node:node /home/node/app/adonis_state
 USER node
 RUN mkdir tmp
 
