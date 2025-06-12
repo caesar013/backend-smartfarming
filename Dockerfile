@@ -14,6 +14,29 @@ COPY --chown=node:node ./package*.json ./
 RUN npm ci
 COPY --chown=node:node . .
 
+USER root
+
+# === PERUBAHAN KUNCI DI SINI ===
+# Install su-exec untuk bisa beralih user dengan aman
+RUN apk --no-cache add su-exec
+
+# Salin skrip entrypoint dan pastikan bisa dieksekusi
+COPY dockerConfig/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Tetapkan entrypoint. Ini akan berjalan sebagai ROOT.
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+# HAPUS ATAU BERI KOMENTAR BARIS INI
+# USER node
+# === AKHIR PERUBAHAN ===
+
+EXPOSE $PORT
+
+# CMD sekarang akan dieksekusi OLEH entrypoint, yang akan
+# menjalankan perintah ini sebagai user 'node' via su-exec.
+CMD ["./dockerConfig/run.sh"]
+
 FROM dependencies AS build
 RUN node ace build --production
 
