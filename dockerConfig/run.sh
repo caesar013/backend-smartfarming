@@ -4,7 +4,8 @@ set -e
 # Run migrations
 node ace migration:run
 
-SEED_FLAG_FILE="/home/node/app/.seeded_sf_adonis"
+# Current path flag is now in a persistent volume
+SEED_FLAG_FILE="/home/node/app/adonis_state/.seeded_sf_adonis"
 
 # Check if the database has already been seeded
 if [ ! -f "$SEED_FLAG_FILE" ]; then
