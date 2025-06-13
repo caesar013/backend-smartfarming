@@ -49,7 +49,7 @@ export default class PlantGrowthNpk extends BaseModel {
   public deletedAt: DateTime | null
 
   static get table() {
-    return "public.plant_growth_npks" // table name
+    return "public.plant_growth_parameters" // table name
   }
 
   @beforeFind()
