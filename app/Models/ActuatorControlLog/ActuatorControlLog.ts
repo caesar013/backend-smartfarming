@@ -10,16 +10,16 @@ export default class ActuatorControlLog extends BaseModel {
   public actuatorId: number
 
   @column()
-  public command: string
+  public action: string
 
   @column()
-  public commandOrigin: string | null
+  public triggeredBy: string
 
   @column.dateTime({ autoCreate: true })
   public created_at: DateTime
 
   static get table() {
-    return "actuator_control_logs" // table name
+    return "public.actuator_control_logs" // table name
   }
 
   @belongsTo(() => Actuator)
