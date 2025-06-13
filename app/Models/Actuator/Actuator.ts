@@ -11,7 +11,7 @@ export default class Actuator extends BaseModel {
   public id: number
 
   @column()
-  public actuatorTypeId: number | null
+  public actuatorTypeId: number
 
   @column()
   public bedLocationId: number | null
@@ -29,7 +29,7 @@ export default class Actuator extends BaseModel {
   public deleted_at: DateTime | null
 
   static get table() {
-    return "actuators" // table name
+    return "public.actuators" // table name
   }
 
   @beforeFind()
@@ -46,8 +46,8 @@ export default class Actuator extends BaseModel {
   public actuatorType: BelongsTo<typeof ActuatorType>
 
   @belongsTo(() => BedLocation)
-  public bedLocation: BelongsTo<typeof BedLocation>
+  public location: BelongsTo<typeof BedLocation>
 
   @hasMany(() => ActuatorControlLog)
-  public actuatorControlLogs: HasMany<typeof ActuatorControlLog>
+  public logs: HasMany<typeof ActuatorControlLog>
 }

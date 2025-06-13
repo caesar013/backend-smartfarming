@@ -1,38 +1,49 @@
-import { BaseModel, BelongsTo, belongsTo, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
-import Dht from 'App/Models/Sensor/Dht'
-import Npk from 'App/Models/Sensor/Npk'
-import Table from 'App/Models/Sensor/Table'
+import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { DateTime } from 'luxon'
+import BedLocation from '../BedLocation/BedLocation'
+import SensorReading from '../SensorReading/SensorReading'
 
 export default class Sensor extends BaseModel {
+  public static softDelete = true
+
   @column({ isPrimary: true })
   public id: number
 
   @column()
-  public sensor_name: string
+  public bedLocationId: number | null
 
   @column()
-  public desc: string
+  public name: string
 
   @column()
-    public table_id: number
+  public desc: string | null
+
+  @column.dateTime({ autoCreate: true })
+  public created_at: DateTime
+
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  public updated_at: DateTime | null
+
+  @column.dateTime()
+  public deleted_at: DateTime | null
 
   static get table() {
     return "public.sensors" // table name
   }
 
-  // has many data npk
-  @hasMany(() => Npk, {
-    foreignKey: 'sensor_id',
-  })
-  public npk: HasMany<typeof Npk>
-  // has many data dht
-  @hasMany(() => Dht, {
-    foreignKey: 'sensor_id',
-  })
-  public dht: HasMany<typeof Dht>
+  @beforeFind()
+  public static findWithoutSoftDeletes(query) {
+    query.whereNull("deleted_at")
+  }
 
-  @belongsTo(() => Table, {
-    foreignKey: 'table_id',
-  })
-  public table: BelongsTo<typeof Table>
+  @beforeFetch()
+  public static fetchWithoutSoftDeletes(query) {
+    query.whereNull("deleted_at")
+  }
+
+  @belongsTo(() => BedLocation)
+  public location: BelongsTo<typeof BedLocation>
+
+  @hasMany(() => SensorReading)
+  public readings: HasMany<typeof SensorReading>
 }
