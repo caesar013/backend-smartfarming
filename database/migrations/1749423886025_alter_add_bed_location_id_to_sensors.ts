@@ -5,7 +5,7 @@ export default class extends BaseSchema {
 
   public async up () {
     this.schema.alterTable(this.tableName, (table) => {
-      table.bigint('bed_location_id').unsigned().references('id').inTable('bed_locations').onDelete('SET NULL').nullable().after('table_id');
+      table.integer('bed_location_id').unsigned().references('id').inTable('bed_locations').onDelete('SET NULL').nullable().after('id');
     })
   }
 
