@@ -5,11 +5,11 @@ export default class extends BaseSeeder {
   public async run() {
     await ActuatorType.createMany([
       {
-        type: 'Water Pump',
+        type_name: 'Water Pump',
         description: 'Used to pump water for irrigation',
       },
       {
-        type: 'Solenoid Valve',
+        type_name: 'Solenoid Valve',
         description: 'Used to control the flow of water in irrigation systems',
       }
     ])
