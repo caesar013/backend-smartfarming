@@ -8,10 +8,8 @@ export default class extends BaseSchema {
       table.increments('id').primary()
 
       table.integer('plant_id').unsigned().references('id').inTable('plants').onDelete('CASCADE')
-      table.integer('bed_location_id').unsigned().references('id').inTable('bed_locations').onDelete('SET NULL').nullable()
-
       table.date('planting_date').notNullable()
-
+      table.date('harvest_date').nullable()
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
