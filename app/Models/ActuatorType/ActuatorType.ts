@@ -9,7 +9,7 @@ export default class ActuatorType extends BaseModel {
   public id: number
 
   @column()
-  public type: string
+  public type_name: string
 
   @column()
   public description: string | null
@@ -24,7 +24,7 @@ export default class ActuatorType extends BaseModel {
   public deleted_at: DateTime | null
 
   static get table() {
-    return "actuator_types" // table name
+    return "public.actuator_types" // table name
   }
 
   @beforeFind()

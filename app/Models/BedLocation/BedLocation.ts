@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeFetch, beforeFind, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeFetch, beforeFind, column, HasMany, hasMany, ManyToMany, manyToMany } from '@ioc:Adonis/Lucid/Orm'
 import Actuator from '../Actuator/Actuator'
 import PlantingBatch from '../PlantingBatch/PlantingBatch'
 import Sensor from '../Sensor/Sensor'
@@ -11,7 +11,7 @@ export default class BedLocation extends BaseModel {
   public id: number
 
   @column()
-  public location: string
+  public name: string
 
   @column()
   public description: string | null
@@ -29,7 +29,7 @@ export default class BedLocation extends BaseModel {
   public deleted_at: DateTime | null
 
   static get table() {
-    return "bed_locations" // table name
+    return "public.bed_locations" // table name
   }
 
   @beforeFind()
@@ -42,12 +42,15 @@ export default class BedLocation extends BaseModel {
     query.whereNull("deleted_at")
   }
 
+  @manyToMany(() => PlantingBatch, {
+    pivotTable: 'batch_locations',
+    pivotColumns: ['created_at', 'updated_at'],
+  })
+    public plantingBatches: ManyToMany<typeof PlantingBatch>
+
   @hasMany(() => Sensor)
   public sensors: HasMany<typeof Sensor>
 
   @hasMany(() => Actuator)
   public actuators: HasMany<typeof Actuator>
-
-  @hasMany(() => PlantingBatch)
-  public plantingBatches: HasMany<typeof PlantingBatch>
 }
