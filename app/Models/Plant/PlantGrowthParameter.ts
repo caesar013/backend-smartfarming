@@ -19,38 +19,37 @@ export default class PlantGrowthNpk extends BaseModel {
   public minAge: number
 
   @column()
-  public maxAge: number
+  public maxAge: number | null
 
   @column()
   public minN: number
 
   @column()
-  public maxN: number
+  public maxN: number | null
 
   @column()
   public minP: number
 
   @column()
-  public maxP: number
+  public maxP: number | null
 
   @column()
   public minK: number
 
   @column()
-  public maxK: number
-
+  public maxK: number | null
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public updatedAt: DateTime
+  public updatedAt: DateTime | null
 
   @column.dateTime()
-  public deleted_at: DateTime
+  public deletedAt: DateTime | null
 
   static get table() {
-    return "plant_growth_npks" // table name
+    return "public.plant_growth_npks" // table name
   }
 
   @beforeFind()
