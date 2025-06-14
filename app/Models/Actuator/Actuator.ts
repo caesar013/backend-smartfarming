@@ -10,23 +10,23 @@ export default class Actuator extends BaseModel {
   @column({ isPrimary: true })
   public id: number
 
-  @column()
+  @column({ serializeAs: 'actuatorTypeId' })
   public actuatorTypeId: number
 
-  @column()
+  @column({ serializeAs: 'bedLocationId' })
   public bedLocationId: number | null
 
   @column()
   public name: string
 
-  @column.dateTime({ autoCreate: true })
-  public created_at: DateTime
+  @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
+  public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public updated_at: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: 'updatedAt' })
+  public updatedAt: DateTime | null
 
-  @column.dateTime()
-  public deleted_at: DateTime | null
+  @column.dateTime({ serializeAs: 'deletedAt' })
+  public deletedAt: DateTime | null
 
   static get table() {
     return "public.actuators" // table name
