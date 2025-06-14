@@ -1,4 +1,4 @@
-import { schema, validator } from '@ioc:Adonis/Core/Validator'
+import { rules, schema, validator } from '@ioc:Adonis/Core/Validator'
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
 export default class UpdatePlantingBatchValidator {
@@ -9,5 +9,18 @@ export default class UpdatePlantingBatchValidator {
 
   public schema = schema.create({
     // your validation rules
+    plantId: schema.number.optional([
+      rules.exists({ table: 'plants', column: 'id' }),
+    ]),
+    plantingDate: schema.date.optional({
+      format: 'yyyy-MM-dd',
+    }, [
+      rules.beforeField('harvestDate'),
+    ]),
+    harvestDate: schema.date.optional({
+      format: 'yyyy-MM-dd',
+    }, [
+      rules.afterField('plantingDate'),
+    ]),
   })
 }
