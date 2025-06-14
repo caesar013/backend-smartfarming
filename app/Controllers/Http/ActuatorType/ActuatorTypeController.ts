@@ -8,7 +8,7 @@ export default class ActuatorTypeController {
   service = new ActuatorTypeService()
   FETCHED_ATTRIBUTE = [
     // attribute
-    'type_name',
+    'typeName',
     'description',
   ]
 

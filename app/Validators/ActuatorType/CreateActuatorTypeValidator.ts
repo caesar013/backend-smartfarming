@@ -9,7 +9,7 @@ export default class CreateActuatorTypeValidator {
 
   public schema = schema.create({
     // your validation rules
-    type_name: schema.string({ trim: true }, [
+    typeName: schema.string({ trim: true }, [
       rules.maxLength(100),
       rules.unique({ table: 'actuator_types', column: 'type_name' }),
     ]),
