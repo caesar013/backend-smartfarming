@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
 import { BaseModel, beforeFetch, beforeFind, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
-import PlantGrowthParameter from './PlantGrowthParameter';
+import PlantGrowthParameter from '../PlantGrowthParameter/PlantGrowthParameter';
 
 
 export default class GrowthStage extends BaseModel {
@@ -24,7 +24,7 @@ export default class GrowthStage extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: 'updatedAt' })
   public updatedAt: DateTime | null
 
-  @column.dateTime({ serializeAs: 'deletedAt'})
+  @column.dateTime({ serializeAs: 'deletedAt' })
   public deletedAt: DateTime | null
 
   static get table() {

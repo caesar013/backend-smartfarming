@@ -1,5 +1,5 @@
 import BaseSeeder from '@ioc:Adonis/Lucid/Seeder'
-import PlantGrowthParameter from 'App/Models/Plant/PlantGrowthParameter'
+import PlantGrowthParameter from 'App/Models/PlantGrowthParameter/PlantGrowthParameter'
 
 export default class extends BaseSeeder {
   public async run() {
