@@ -9,9 +9,9 @@ export default class CreatePlantValidator {
 
   public schema = schema.create({
     name: schema.string({}, [
-      rules.maxLength(100),
+      rules.maxLength(200),
     ]),
-    scientific_name: schema.string({}, [
+    scientificName: schema.string.optional({}, [
       rules.maxLength(100)
     ]),
     description: schema.string.optional({ trim: true }),

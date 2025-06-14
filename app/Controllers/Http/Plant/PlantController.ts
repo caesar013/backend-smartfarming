@@ -9,7 +9,7 @@ export default class PlantController {
   FETCHED_ATTRIBUTE = [
     // attribute
     'name',
-    'scientific_name',
+    'scientificName',
     'description',
   ]
 
