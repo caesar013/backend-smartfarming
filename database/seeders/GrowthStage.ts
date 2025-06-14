@@ -1,5 +1,5 @@
 import BaseSeeder from '@ioc:Adonis/Lucid/Seeder'
-import GrowthStage from 'App/Models/Plant/GrowthStage'
+import GrowthStage from 'App/Models/GrowthStage/GrowthStage'
 
 export default class extends BaseSeeder {
   public async run() {
