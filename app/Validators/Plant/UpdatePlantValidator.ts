@@ -17,9 +17,6 @@ export default class UpdatePlantValidator {
       rules.minLength(1),
       rules.maxLength(100)
     ]),
-    description: schema.string.nullableAndOptional({}, [
-      rules.nullable(),
-      rules.maxLength(255)
-    ]),
+    description: schema.string.optional({ trim: true }),
   })
 }
