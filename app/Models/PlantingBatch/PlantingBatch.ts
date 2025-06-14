@@ -9,23 +9,24 @@ export default class PlantingBatch extends BaseModel {
   @column({ isPrimary: true })
   public id: number
 
-  @column()
+  @column({ serializeAs: 'plantId' })
   public plantId: number
 
-  @column.date()
+  @column.date({ serializeAs: 'plantingDate' })
   public plantingDate: DateTime
 
-  @column.date()
+  @column.date({ serializeAs: 'harvestDate' })
   public harvestDate: DateTime
 
-  @column.dateTime({ autoCreate: true })
-  public created_at: DateTime
+  // turn UTC to Asia/Jakarta timezone
+  @column.dateTime({ autoCreate: true, serializeAs: 'createdAt', })
+  public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public updated_at: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: 'updatedAt' })
+  public updatedAt: DateTime | null
 
-  @column.dateTime()
-  public deleted_at: DateTime | null
+  @column.dateTime({ serializeAs: 'deletedAt' })
+  public deletedAt: DateTime | null
 
   static get table() {
     return "public.planting_batches" // table name
