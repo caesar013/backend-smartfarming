@@ -10,6 +10,7 @@ export default class UpdatePlantValidator {
   public schema = schema.create({
     // your validation rules
     name: schema.string.optional({}, [
+      rules.required(),
       rules.minLength(1),
       rules.maxLength(200),
     ]),

@@ -9,13 +9,15 @@ export default class UpdateActuatorValidator {
 
   public schema = schema.create({
     // your validation rules
-    actuatorTypeId: schema.number.nullable([
+    actuatorTypeId: schema.number.optional([
+      rules.required(),
       rules.exists({ table: 'actuator_types', column: 'id' })
     ]),
-    bedLocationId: schema.number.nullableAndOptional([
+    bedLocationId: schema.number.optional([
       rules.exists({ table: 'bed_locations', column: 'id' }),
     ]),
     name: schema.string.optional({ trim: true }, [
+      rules.required(),
       rules.maxLength(255),
       rules.minLength(1),
     ]),

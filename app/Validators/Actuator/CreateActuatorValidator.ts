@@ -13,6 +13,7 @@ export default class CreateActuatorValidator {
       rules.exists({ table: 'actuator_types', column: 'id' })
     ]),
     bedLocationId: schema.number.optional([
+      rules.required(),
       rules.exists({ table: 'bed_locations', column: 'id' })
     ]),
     name: schema.string({ trim: true }, [

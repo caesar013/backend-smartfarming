@@ -10,6 +10,7 @@ export default class UpdateBedLocationValidator {
   public schema = schema.create({
     // your validation rules
     name: schema.string.optional({ trim: true }, [
+      rules.required(),
       rules.maxLength(255),
     ]),
     description: schema.string.optional({ trim: true }),

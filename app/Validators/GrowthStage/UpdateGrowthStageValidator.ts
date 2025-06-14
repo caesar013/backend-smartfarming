@@ -10,6 +10,7 @@ export default class UpdateGrowthStageValidator {
   public schema = schema.create({
     // your validation rules
     name: schema.string.optional({ trim: true }, [
+      rules.required(),
       rules.maxLength(100),
       rules.unique({
         table: 'growth_stages',
@@ -18,6 +19,7 @@ export default class UpdateGrowthStageValidator {
       }),
     ]),
     order: schema.number.optional([
+      rules.required(),
       rules.unsigned(),
       rules.unique({
         table: 'growth_stages',
