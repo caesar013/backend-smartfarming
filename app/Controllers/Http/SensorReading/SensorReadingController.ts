@@ -1,20 +1,16 @@
-import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import SensorReadingService from 'App/Services/SensorReading/SensorReadingService'
 import CreateSensorReadingValidator from 'App/Validators/SensorReading/CreateSensorReadingValidator'
 import UpdateSensorReadingValidator from 'App/Validators/SensorReading/UpdateSensorReadingValidator'
 import { ValidationException } from '@ioc:Adonis/Core/Validator'
+import { SearchQuerySchema } from 'App/Validators/SensorReading/SearchValidator'
+import { validator } from '@ioc:Adonis/Core/Validator'
 
 export default class SensorReadingController {
   service = new SensorReadingService()
   FETCHED_ATTRIBUTE = [
     // attribute
   ]
-
-  TIME_RANGE = {
-    // range
-    HOURLY: 'hour',
-    DAILY: 'day',
-  }
 
   public async index({ request, response }: HttpContextContract) {
     try {
@@ -104,12 +100,15 @@ export default class SensorReadingController {
 
   public async search({ request, response }: HttpContextContract) {
     try {
-      const { message, payload } = request.qs()
-      const parsedPayload = JSON.parse(payload || '{}')
-      return { "msg": 'hello world!', pesan: message, payload: parsedPayload }
-      // const options = request.parseParams(request.all())
-      // const result = await this.service.search(options)
-      // return response.api(result, 'Search results', 200, request)
+
+      const filters = await validator.validate({
+        schema: SearchQuerySchema,
+        data: request.qs(),
+      })
+
+      const result = await this.service.search(filters)
+
+      return response.api(result, 'Search results', 200)
     } catch (error) {
       return response.error(error.message)
     }
