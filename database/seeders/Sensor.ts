@@ -5,16 +5,19 @@ export default class extends BaseSeeder {
   public async run() {
     await Sensor.createMany([
       {
-        sensor_name: 'dht',
-        table_id: 1
+        name: 'dht',
+        publicName: 'dht',
+        bedLocationId: null
       },
       {
-        sensor_name: 'npk_1',
-        table_id: 2
+        name: 'npk_1',
+        publicName: 'npk1',
+        bedLocationId: 1
       },
       {
-        sensor_name: 'npk_2',
-        table_id: 2
+        name: 'npk_2',
+        publicName: 'npk2',
+        bedLocationId: 2
       }
     ])
   }

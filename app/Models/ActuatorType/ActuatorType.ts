@@ -8,23 +8,23 @@ export default class ActuatorType extends BaseModel {
   @column({ isPrimary: true })
   public id: number
 
-  @column()
-  public type: string
+  @column({ serializeAs: 'typeName' })
+  public typeName: string
 
   @column()
   public description: string | null
 
-  @column.dateTime({ autoCreate: true })
-  public created_at: DateTime
+  @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
+  public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public updated_at: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: 'updatedAt' })
+  public updatedAt: DateTime | null
 
-  @column.dateTime()
-  public deleted_at: DateTime | null
+  @column.dateTime({ serializeAs: 'deletedAt' })
+  public deletedAt: DateTime | null
 
   static get table() {
-    return "actuator_types" // table name
+    return "public.actuator_types" // table name
   }
 
   @beforeFind()

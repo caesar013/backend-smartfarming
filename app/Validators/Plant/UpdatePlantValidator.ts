@@ -11,15 +11,12 @@ export default class UpdatePlantValidator {
     // your validation rules
     name: schema.string.optional({}, [
       rules.minLength(1),
-      rules.maxLength(100),
+      rules.maxLength(200),
     ]),
-    scientific_name: schema.string.optional({}, [
+    scientificName: schema.string.optional({}, [
       rules.minLength(1),
       rules.maxLength(100)
     ]),
-    description: schema.string.nullableAndOptional({}, [
-      rules.nullable(),
-      rules.maxLength(255)
-    ]),
+    description: schema.string.optional({ trim: true }),
   })
 }

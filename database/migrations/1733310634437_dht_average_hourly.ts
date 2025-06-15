@@ -9,8 +9,7 @@ export default class extends BaseSchema {
       table.integer('temperature')
       table.integer('humidity')
       table.integer('luminosity')
-      table.bigInteger('sensor_id').unsigned();
-      table.foreign('sensor_id').references('id').inTable('sensors');
+      table.integer('sensor_id').unsigned().references('id').inTable('sensors')
       table.timestamp('created_at').defaultTo(this.now())
     })
   }

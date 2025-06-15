@@ -5,10 +5,17 @@ export default class extends BaseSchema {
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.increments('id')
+      table.increments('id').primary()
+      table.string('name', 100).notNullable()
+      table.string('public_name', 100).notNullable().unique()
       table.text('desc').nullable()
-      table.string('sensor_name', 12)
-      table.bigint('table_id').unsigned().references('id').inTable('tables')
+
+      /**
+       * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
+       */
+      table.timestamp('created_at', { useTz: true }).notNullable().defaultTo(this.now())
+      table.timestamp('updated_at', { useTz: true }).nullable()
+      table.timestamp('deleted_at', { useTz: true }).nullable()
     })
   }
 

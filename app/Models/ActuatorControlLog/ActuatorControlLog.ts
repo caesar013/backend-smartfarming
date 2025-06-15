@@ -6,20 +6,20 @@ export default class ActuatorControlLog extends BaseModel {
   @column({ isPrimary: true })
   public id: number
 
-  @column()
+  @column({ serializeAs: 'actuatorId' })
   public actuatorId: number
 
   @column()
-  public command: string
+  public action: string
 
-  @column()
-  public commandOrigin: string | null
+  @column({ serializeAs: 'triggeredBy' })
+  public triggeredBy: string
 
-  @column.dateTime({ autoCreate: true })
-  public created_at: DateTime
+  @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
+  public createdAt: DateTime
 
   static get table() {
-    return "actuator_control_logs" // table name
+    return "public.actuator_control_logs" // table name
   }
 
   @belongsTo(() => Actuator)

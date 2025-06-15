@@ -13,8 +13,7 @@ export default class extends BaseSchema {
       table.integer('nitrogen')
       table.integer('phosphorus')
       table.integer('potassium')
-      table.bigInteger('sensor_id').unsigned()
-      table.foreign('sensor_id').references('id').inTable('sensors')
+      table.integer('sensor_id').unsigned().references('id').inTable('sensors')
       table.timestamp('created_at').defaultTo(this.now())
     })
   }
