@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import { BaseModel, beforeFetch, beforeFind, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
-import PlantGrowthNpk from './PlantGrowthNpk';
+import PlantGrowthParameter from '../PlantGrowthParameter/PlantGrowthParameter';
+import PlantingBatch from '../PlantingBatch/PlantingBatch';
 
 export default class Plant extends BaseModel {
   public static softDelete = true
@@ -11,23 +12,23 @@ export default class Plant extends BaseModel {
   @column()
   public name: string
 
-  @column()
-  public scientificName: string
+  @column({ serializeAs: 'scientificName' })
+  public scientificName: string |  null
 
   @column()
-  public description: string
+  public description: string | null
 
-  @column.dateTime({ autoCreate: true })
-  public created_at: DateTime
+  @column.dateTime({ autoCreate: true , serializeAs: 'createdAt'})
+  public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  public updated_at: DateTime
+  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: 'updatedAt' })
+  public updatedAt: DateTime | null
 
-  @column.dateTime()
-  public deleted_at: DateTime
+  @column.dateTime({ serializeAs: 'deletedAt' })
+  public deletedAt: DateTime | null
 
   static get table() {
-    return "plants" // table name
+    return "public.plants" // table name
   }
 
   @beforeFind()
@@ -40,8 +41,9 @@ export default class Plant extends BaseModel {
     query.whereNull("deleted_at")
   }
 
-  @hasMany(() => PlantGrowthNpk, {
-    foreignKey: 'plantId',
-  })
-  public PlantGrowthNpks: HasMany<typeof PlantGrowthNpk>
+  @hasMany(() => PlantGrowthParameter)
+  public plantGrowthParameters: HasMany<typeof PlantGrowthParameter>
+
+  @hasMany(() => PlantingBatch)
+  public plantingBatches: HasMany<typeof PlantingBatch>
 }

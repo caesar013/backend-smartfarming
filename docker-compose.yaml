@@ -46,6 +46,9 @@ services:
       - ./:/home/node/app
       - ./dockerConfig/run.sh:/home/node/app/dockerConfig/run.sh
       - /home/node/app/node_modules
+      # This volueme is used to persist the state of seeders and migrations
+      - adonis_state:/home/node/app/adonis_state
 
 volumes:
   postgres-data:
+  adonis_state:

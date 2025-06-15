@@ -6,11 +6,15 @@ export default class extends BaseSeeder {
   }
   public async run() {
     // Write your database queries inside the run method
-    await this.runSeeder(await import('Database/seeders/Table'))
     await this.runSeeder(await import('Database/seeders/Role'))
+    await this.runSeeder(await import('Database/seeders/Account'))
+    await this.runSeeder(await import('Database/seeders/BedLocation'))
     await this.runSeeder(await import('Database/seeders/Sensor'))
+    await this.runSeeder(await import('Database/seeders/ActuatorType'))
     await this.runSeeder(await import('Database/seeders/Plant'))
     await this.runSeeder(await import('Database/seeders/GrowthStage'))
-    await this.runSeeder(await import('Database/seeders/PlantGrowthNpk'))
+    await this.runSeeder(await import('Database/seeders/PlantGrowthParameter'))
+    await this.runSeeder(await import('Database/seeders/Actuator'))
+    await this.runSeeder(await import('Database/seeders/PlantingBatch'))
   }
 }
