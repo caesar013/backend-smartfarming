@@ -12,12 +12,6 @@ export default class SensorController {
     'desc',
   ]
 
-  TIME_RANGE = {
-    // range
-    HOURLY: 'hour',
-    DAILY: 'day',
-  }
-
   public async index({ request, response }: HttpContextContract) {
     try {
       const options = request.parseParams(request.all())
@@ -94,23 +88,11 @@ export default class SensorController {
       return response.error(error.message)
     }
   }
+  public async getLatest({ response }: HttpContextContract) {
+    return response.redirect().toRoute('sensor-reading.getLatest')
+  }
 
-  // public async getData({ request, response }: HttpContextContract) {
-  //   try {
-  //     const options = this.service.parseParams(request.all(), this.TIME_RANGE)
-  //     const result = await this.service.getAll(options)
-  //     return result
-  //   } catch (error) {
-  //     return response.error(error.message)
-  //   }
-  // }
-
-  // public async getLatest({ response }: HttpContextContract) {
-  //   try {
-  //     const result = await this.service.getLatest()
-  //     return result
-  //   } catch (error) {
-  //     return response.error(error.message)
-  //   }
-  // }
+  public async getData({ request, response }: HttpContextContract) {
+    return response.redirect().toRoute('sensor-reading.search', {}, { qs: request.qs() })
+  }
 }
