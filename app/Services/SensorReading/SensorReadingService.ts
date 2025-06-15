@@ -12,7 +12,8 @@ export default class SensorReadingService extends BaseService {
       const latestReadings = await this.repository.getLatestReadings()
 
       const formattedReadings = latestReadings.reduce((accumulator, currentReading) => {
-        accumulator[currentReading.name] = currentReading.payload
+        const sensor_name = currentReading.name.replace('_', '').toLowerCase() // Convert to lowercase and remove underscores
+        accumulator[sensor_name] = currentReading.payload
         return accumulator
       }, {})
 
