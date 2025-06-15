@@ -15,6 +15,9 @@ export default class Sensor extends BaseModel {
   @column()
   public name: string
 
+  @column({ serializeAs: 'publicName' })
+  public publicName: string
+
   @column()
   public desc: string | null
 
