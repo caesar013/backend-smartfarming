@@ -8,7 +8,7 @@ export default class SensorReading extends BaseModel {
   @column({ isPrimary: true })
   public id: number | string // BIGSERIAL type, can be a number or string in JS
 
-  @column()
+  @column({ serializeAs: 'sensorId' })
   public sensorId: number
 
   @column({
@@ -17,11 +17,11 @@ export default class SensorReading extends BaseModel {
   })
   public payload: object // JSONB type, stored as a string in JS
 
-  @column.dateTime({ autoCreate: true })
-  public created_at: DateTime
+  @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
+  public createdAt: DateTime
 
-  @column.dateTime()
-  public read_at: DateTime | null
+  @column.dateTime({ serializeAs: 'readAt' })
+  public readAt: DateTime | null
 
   static get table() {
     return "public.sensor_readings" // table name
