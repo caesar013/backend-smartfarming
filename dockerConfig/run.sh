@@ -1,36 +1,47 @@
 #!/bin/sh
+# This script is executed by the docker-entrypoint.sh as the 'node' user.
 set -e
 
-# Selalu jalankan migrasi untuk memastikan skema database up-to-date
-echo "Running Adonis migrations..."
+# --- SCRIPT CONFIGURATION ---
+# The entrypoint script is responsible for ensuring this directory exists and
+# is owned by the 'node' user.
+STATE_DIR="/home/node/app/adonis_state"
+SEED_FLAG_FILE="$STATE_DIR/.seeded_sf_adonis"
+
+
+# --- 1. RUN DATABASE MIGRATIONS ---
+echo "RUN_SCRIPT: Running database migrations as user '$(whoami)'..."
 node ace migration:run
 if [ $? -ne 0 ]; then
-  echo "Adonis migrations failed."
+  echo "RUN_SCRIPT: Adonis migrations failed. Exiting."
   exit 1
 fi
-echo "Adonis migrations completed successfully."
+echo "RUN_SCRIPT: Migrations completed successfully."
 
 
-# Path ke flag file di dalam named volume
-SEED_FLAG_FILE="/home/node/app/adonis_state/.seeded_sf_adonis"
-
-# Cek apakah seeder perlu dijalankan
+# --- 2. RUN DATABASE SEEDER (IF NEEDED) ---
 if [ ! -f "$SEED_FLAG_FILE" ]; then
-  echo "Database not seeded yet, running seeders..."
+  echo "RUN_SCRIPT: Seed flag not found. Database will be seeded."
   node ace db:seed
+
   if [ $? -eq 0 ]; then
-    # Buat direktori jika belum ada (langkah pengamanan)
-    mkdir -p /home/node/app/adonis_state
+    # The seeder ran successfully. Create the flag file inside the volume
+    # to prevent the seeder from running on subsequent container starts.
+    # The 'touch' command will succeed because the entrypoint already set
+    # the correct permissions on the STATE_DIR.
     touch "$SEED_FLAG_FILE"
-    echo "Adonis database seeded successfully."
+    echo "RUN_SCRIPT: Database seeded successfully and flag file created."
   else
-    echo "Adonis database seeding failed."
+    echo "RUN_SCRIPT: Database seeding failed. Exiting."
     exit 1
   fi
 else
-  echo "Adonis database already seeded, skipping seeding."
+  echo "RUN_SCRIPT: Seed flag found. Skipping database seeding."
 fi
 
-# Start server
-echo "Starting server..."
+
+# --- 3. START THE ADONISJS SERVER ---
+echo "RUN_SCRIPT: Starting server with hot-reload..."
+# Use 'exec' to replace the shell process with the node process,
+# which is standard practice for a container's main command.
 exec node ace serve --watch
