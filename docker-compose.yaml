@@ -30,10 +30,12 @@ services:
       dockerfile: Dockerfile
     container_name: sf_backend
     command: ./dockerConfig/run.sh
-    restart: always
+    restart: unless-stopped
     depends_on:
       sf_postgres:
         condition: service_healthy # this will ensure that the database is up and running before starting the backend
+      mqtt_broker:
+        condition: service_started # this will ensure that the MQTT broker is up and running before starting the backend
     ports:
       - ${PORT}:${PORT}
       - 9229:9229
@@ -49,6 +51,22 @@ services:
       # This volueme is used to persist the state of seeders and migrations
       - adonis_state:/home/node/app/adonis_state
 
+  mqtt_broker:
+    image: eclipse-mosquitto:2.0.21
+    container_name: mqtt_broker
+    restart: unless-stopped
+    ports:
+      - "1883:1883" # MQTT port
+      - "9001:9001" # WebSocket port
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-logs:/mosquitto/log
+    stdin_open: true
+    tty: true
+
 volumes:
   postgres-data:
   adonis_state:
+  mosquitto-data:
+  mosquitto-logs:
