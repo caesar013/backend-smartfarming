@@ -51,19 +51,44 @@ services:
       # This volueme is used to persist the state of seeders and migrations
       - adonis_state:/home/node/app/adonis_state
 
+  # MQTT Password Generator Service (runs once to create password file)
   mqtt_broker:
     image: eclipse-mosquitto:2.0.21
     container_name: mqtt_broker
     restart: unless-stopped
     ports:
-      - "1883:1883" # MQTT port
-      - "9001:9001" # WebSocket port
+      - "1883:1883"
+      - "9001:9001"
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - mosquitto-data:/mosquitto/data
       - mosquitto-logs:/mosquitto/log
-    stdin_open: true
-    tty: true
+    entrypoint: >
+      sh -c "
+        # Create password file if it doesn't exist
+        if [ ! -f /mosquitto/config/pwdfile ]; then
+          echo 'Creating password file...'
+          touch /mosquitto/config/pwdfile
+          if [ -n \"$MQTT_USERNAME\" ] && [ -n \"$MQTT_PASSWORD\" ]; then
+            mosquitto_passwd -b /mosquitto/config/pwdfile $MQTT_USERNAME $MQTT_PASSWORD
+            echo 'Password file created with user: $MQTT_USERNAME'
+          else
+            mosquitto_passwd -b /mosquitto/config/pwdfile admin admin
+            echo 'Password file created with default admin:admin credentials'
+          fi
+        fi
+        # Start mosquitto
+        exec /docker-entrypoint.sh /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
+      "
+    environment:
+      MQTT_USERNAME: ${MQTT_USERNAME:-admin}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-admin}
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5 mosquitto_pub -h localhost -t test -m 'health check' -u ${MQTT_USERNAME:-admin} -P ${MQTT_PASSWORD:-admin} || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
 volumes:
   postgres-data:
