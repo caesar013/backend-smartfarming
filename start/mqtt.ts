@@ -1,5 +1,4 @@
 import Env from '@ioc:Adonis/Core/Env'
-import SensorService from "App/Services/Sensor/SensorService";
 import mqtt from "mqtt";
 
 const client = mqtt.connect(`mqtt://${Env.get('MQTT_URL')}`, {
@@ -17,9 +16,21 @@ client.on('connect', () => {
 
   client.subscribeAsync('farm/sensor');
   client.on('message', async (_, message) => {
-	console.log(JSON.parse(message.toString()));
-    await SensorService.handleMessage(JSON.parse(message.toString()));
+    console.log('Message:', message.toString());
+	// console.log(JSON.parse(message.toString()));
   });
+});
+
+client.on('reconnect', () => {
+  console.log('Reconnecting to MQTT broker...');
+});
+
+client.on('close', () => {
+  console.log('MQTT connection closed');
+});
+
+client.on('offline', () => {
+  console.log('MQTT client is offline');
 });
 
 client.on('error', (err) => {

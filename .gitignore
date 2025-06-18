@@ -6,3 +6,4 @@ coverage
 .env
 tmp
 .seeded_sf_adonis
+pwdfile

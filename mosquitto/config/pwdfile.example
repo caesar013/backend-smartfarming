@@ -1,0 +1,11 @@
+# Copy this file and rename it as `pwdfile`
+# Add your credential here
+
+# username:password
+
+# Run `docker compose exec -it mosquitto sh` to enter mosquitto container
+# then run command `sudo mosquitto_passwd -U mosquitto/config/passwd <username>`
+
+# Exit container by running `exit` on the shell
+
+# Lastly, run `docker compose restart mosquitto` in order to let mosquitto service load the passwd file
