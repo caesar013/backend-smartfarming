@@ -1,4 +1,3 @@
-import { CannotCopyFileException } from "@adonisjs/core/build/standalone"
 import BaseService from "App/Base/Services/BaseService"
 import SensorReadingRepository from "App/Repositories/SensorReading/SensorReadingRepository"
 import { DateTime } from "luxon"
@@ -9,7 +8,7 @@ interface RangeFilter {
 }
 
 interface SensorMessage {
-  [key: string]: any
+  [key: string]: any // Define the structure of the sensor message
 }
 
 export default class SensorReadingService extends BaseService {
@@ -67,26 +66,21 @@ export default class SensorReadingService extends BaseService {
     return { startDate, endDate }
   }
 
-  private sensorMap: Record<string, number> = {
-    dht: 1,
-    npk1: 2,
-    npk2: 3,
-  }
-
-
   public async handleIncomingMessage(msg: any) {
+
     const entries = Object.entries(msg)
+    const sensorMap = await this.repository.fetchSensorMap()
 
     for (const [sensorKey, payload] of entries) {
-      const sensorId = this.sensorMap[sensorKey]
+      const sensorId = sensorMap[sensorKey]
 
       if (!sensorId) continue // Skip if sensorKey is not recognized
 
       if (!this.isValidSensorMessage(payload)) continue // Skip if payload is not a valid sensor message
 
       const readAt = DateTime.fromFormat(payload.time, 'yyyy-MM-dd HH:mm:ss', { zone: 'Asia/Jakarta' }).toUTC() // Convert to UTC
-
       const { time, ...data } = payload
+
       await this.repository.store({
         sensorId,
         payload: data,

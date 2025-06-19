@@ -99,4 +99,13 @@ export default class SensorReadingRepository extends BaseRepository {
     const { rows } = await Database.rawQuery(query, bindings)
     return rows
   }
+
+  public async fetchSensorMap() {
+    const sensors = await Sensor.query().select('id', 'publicName')
+      .whereNull('deletedAt')
+
+    return Object.fromEntries(
+      sensors.map(sensor => [sensor.publicName, sensor.id])
+    )
+  }
 }
