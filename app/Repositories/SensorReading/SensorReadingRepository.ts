@@ -20,7 +20,7 @@ export default class SensorReadingRepository extends BaseRepository {
     const latestReadingQuery = `
         SELECT DISTINCT ON (s.id)
         s.id as sensor_id,
-        s.name as name,
+        s.public_name as name,
         sr.payload,
         sr.created_at as timestamp
       FROM
