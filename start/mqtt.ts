@@ -1,4 +1,5 @@
 import Env from '@ioc:Adonis/Core/Env'
+import SensorReadingService from 'App/Services/SensorReading/SensorReadingService';
 import mqtt from "mqtt";
 
 const client = mqtt.connect(`mqtt://${Env.get('MQTT_URL')}`, {
@@ -16,8 +17,11 @@ client.on('connect', () => {
 
   client.subscribeAsync('farm/sensor');
   client.on('message', async (_, message) => {
-    console.log('Message:', message.toString());
-	// console.log(JSON.parse(message.toString()));
+
+    const msg = JSON.parse(message.toString())
+    const service = new SensorReadingService();
+
+    await service.handleIncomingMessage(msg);
   });
 });
 
