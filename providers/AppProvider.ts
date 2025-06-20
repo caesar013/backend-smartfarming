@@ -17,10 +17,6 @@ export default class AppProvider {
     this.extendResponse()
   }
 
-  public async ready () {
-    (await import('../start/mqtt')).default;
-  }
-
   public async shutdown () {
     // Cleanup, since app is going down
   }
