@@ -18,6 +18,8 @@ client.on('connect', () => {
   client.subscribeAsync('farm/sensor');
   client.on('message', async (_, message) => {
 
+    // Log the time when the message is received. Following asia/jakarta timezone
+    console.log('Received message at ', new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }), '. Processing...');
     const msg = JSON.parse(message.toString())
     const service = new SensorReadingService();
 
