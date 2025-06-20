@@ -19,6 +19,9 @@ export default class Actuator extends BaseModel {
   @column()
   public name: string
 
+  @column({ serializeAs: 'relayPin' })
+  public relayPin: number
+
   @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
   public createdAt: DateTime
 
