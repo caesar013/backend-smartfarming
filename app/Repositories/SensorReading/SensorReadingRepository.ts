@@ -18,86 +18,87 @@ export default class SensorReadingRepository extends BaseRepository {
 
   public async getLatestReadings() {
     const latestReadingQuery = `
-        SELECT DISTINCT ON (s.id)
-        s.id as sensor_id,
-        s.public_name as name,
+      SELECT DISTINCT ON (s.id)
+        s.id AS sensor_id,
+        s.public_name AS name,
         sr.payload,
-        sr.created_at as timestamp
+        sr.created_at AS timestamp
       FROM
         sensors s
       INNER JOIN
         sensor_readings sr ON s.id = sr.sensor_id
+      WHERE
+        s.deleted_at IS NULL
       ORDER BY
         s.id, sr.created_at DESC;
-    `
-    const { rows } = await Database.rawQuery(latestReadingQuery)
-    return rows
+    `;
+    const { rows } = await Database.rawQuery(latestReadingQuery);
+    return rows;
   }
 
   public async findByPublicName(publicName: string) {
     return Sensor.findBy('public_name', publicName)
   }
 
+  /**
+   * Performs a search for aggregated sensor readings.
+   * This function is now focused solely on fetching the aggregated data from the database.
+   * The transformation/grouping of this data is handled in the Service layer.
+   */
   public async search(options: SearchOptions) {
-    const bindings: any[] = []
+    const bindings: any[] = [];
 
-    // ---- 1. Build the SELECT clause dynamically ----
-    const selectMetrics: string[] = []
+    // 1. Build SELECT clause for metrics dynamically
+    const selectMetrics: string[] = [];
     if (options.metrics && options.metrics.length > 0) {
-      options.metrics.forEach((metric) => {
-        // For each metric, create an AVG() expression.
-        // The ::numeric cast is crucial for AVG to work on JSONB text values.
-        selectMetrics.push(`AVG((sr.payload ->> ?)::numeric) AS ??`)
-        bindings.push(metric, metric) // Add metric name twice for binding
-      })
+      for (const metric of options.metrics) {
+        // Use ?? for identifiers and ? for values to prevent SQL injection
+        selectMetrics.push(`AVG((sr.payload ->> ?)::float) AS ??`);
+        bindings.push(metric, metric);
+      }
     } else {
-      // Default: select the entire payload if no specific metrics are requested
-      // Note: AVG cannot be used here, so we take the first payload in the group.
-      selectMetrics.push(`(array_agg(sr.payload ORDER BY sr.created_at))[1] as payload`)
+      selectMetrics.push(`jsonb_agg(sr.payload) AS payloads`);
     }
 
-    // ---- 2. Build the full Query String ----
+    // 2. Build the main query
+    // We select the time bucket, sensor name, and the dynamic metrics.
     let query = `
       SELECT
-        date_trunc(?, sr.created_at AT TIME ZONE 'Asia/Jakarta') as time_bucket,
-        s.public_name as sensor_name,
+        date_trunc(?, sr.created_at AT TIME ZONE 'Asia/Jakarta') AS time_bucket,
+        s.public_name AS sensor_name,
         ${selectMetrics.join(', ')}
       FROM
         sensor_readings sr
       INNER JOIN
         sensors s ON sr.sensor_id = s.id
-    `
-    bindings.unshift(options.interval) // Add interval ('hour' or 'day') to the start of bindings
+    `;
 
-    // ---- 3. Build the WHERE clause dynamically ----
-    const whereClauses: string[] = []
-    // Date range is always applied
-    whereClauses.push(`sr.created_at BETWEEN ? AND ?`)
-    bindings.push(options.startDate, options.endDate)
+    // Add interval to the beginning of bindings for date_trunc
+    bindings.unshift(options.interval);
 
-    // Sensor filter is optional
+    // 3. Build WHERE clause
+    const whereClauses: string[] = [];
+    whereClauses.push(`sr.created_at BETWEEN ? AND ?`);
+    bindings.push(options.startDate, options.endDate);
+
     if (options.sensors && options.sensors.length > 0) {
-      // Use 'unnest' for array binding in raw queries
-      whereClauses.push(`s.public_name = ANY(?)`)
-      // whereClauses.push(`s.public_name IN (?)`)
-      bindings.push(options.sensors)
+      // Using `unnest` is a good way to handle array parameters in raw queries
+      whereClauses.push(`s.public_name = ANY(SELECT unnest(?::text[]))`);
+      bindings.push(options.sensors);
     }
 
-    query += ` WHERE ${whereClauses.join(' AND ')}`
+    query += ` WHERE ${whereClauses.join(' AND ')}`;
 
-    // ---- 4. Add GROUP BY and ORDER BY ----
+    // 4. GROUP BY and ORDER BY clause
+    // Group by the time bucket (index 1) and sensor name (index 2)
     query += `
-      GROUP BY
-        time_bucket,
-        sensor_name
-      ORDER BY
-        sensor_name,
-        time_bucket;
-    `
+      GROUP BY 1, 2
+      ORDER BY 2, 1;
+    `;
 
-    // ---- 5. Execute the query ----
-    const { rows } = await Database.rawQuery(query, bindings)
-    return rows
+    // 5. Execute and return the flat results
+    const { rows } = await Database.rawQuery(query, bindings);
+    return rows;
   }
 
   public async fetchSensorMap() {
