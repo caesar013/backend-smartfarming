@@ -1,11 +1,13 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column, HasMany, hasMany, beforeCreate } from '@ioc:Adonis/Lucid/Orm'
 import ActuatorType from '../ActuatorType/ActuatorType'
 import BedLocation from '../BedLocation/BedLocation'
 import ActuatorControlLog from '../ActuatorControlLog/ActuatorControlLog'
+import slugify from 'slugify'
 
 export default class Actuator extends BaseModel {
   public static softDelete = true
+  public static routeLookupKey = 'slug'
 
   @column({ isPrimary: true })
   public id: number
@@ -18,6 +20,9 @@ export default class Actuator extends BaseModel {
 
   @column()
   public name: string
+
+  @column()
+  public slug: string
 
   @column({ serializeAs: 'relayPin' })
   public relayPin: number
@@ -33,6 +38,17 @@ export default class Actuator extends BaseModel {
 
   static get table() {
     return "public.actuators" // table name
+  }
+
+  @beforeCreate()
+  public static async createSlug(actuator: Actuator) {
+    if (actuator.$dirty.name) {
+      actuator.slug = slugify(actuator.name, {
+        lower: true,
+        strict: true,
+        trim: true,
+      })
+    }
   }
 
   @beforeFind()
