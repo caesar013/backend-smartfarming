@@ -4,7 +4,6 @@ import CreateActuatorValidator from 'App/Validators/Actuator/CreateActuatorValid
 import UpdateActuatorValidator from 'App/Validators/Actuator/UpdateActuatorValidator'
 import { ValidationException } from '@ioc:Adonis/Core/Validator'
 import ActuatorControlValidator from 'App/Validators/Actuator/ActuatorControlValidator'
-import Actuator from 'App/Models/Actuator/Actuator'
 
 export default class ActuatorController {
   service = new ActuatorService()
@@ -141,7 +140,7 @@ export default class ActuatorController {
  * description: Validation error (e.g., invalid action).
  */
 
-  public async control( { params, request, response }: HttpContextContract) {
+  public async control( { params, request, response, auth }: HttpContextContract) {
     try {
       // Validate the request payload
       const payload = await request.validate(ActuatorControlValidator)
@@ -149,8 +148,11 @@ export default class ActuatorController {
       // Get the slug from the URL.
       const slug = params.slug
 
+      // Add the authenticated user to the payload
+      const username = auth.user ? `User: ${auth.user.username}` : 'System'
+
       // Call the service to handle the logic
-      const log = await this.service.controlActuator(slug, payload)
+      const log = await this.service.controlActuator(slug, payload, username)
 
       return response.ok({
         message: 'Command sent successfully to the actuator.',
