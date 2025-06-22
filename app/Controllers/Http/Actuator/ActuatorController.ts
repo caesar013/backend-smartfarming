@@ -4,6 +4,7 @@ import CreateActuatorValidator from 'App/Validators/Actuator/CreateActuatorValid
 import UpdateActuatorValidator from 'App/Validators/Actuator/UpdateActuatorValidator'
 import { ValidationException } from '@ioc:Adonis/Core/Validator'
 import ActuatorControlValidator from 'App/Validators/Actuator/ActuatorControlValidator'
+import Actuator from 'App/Models/Actuator/Actuator'
 
 export default class ActuatorController {
   service = new ActuatorService()
@@ -14,7 +15,7 @@ export default class ActuatorController {
     'name',
   ]
 
-  public async index ({ request, response }: HttpContextContract) {
+  public async index({ request, response }: HttpContextContract) {
     try {
       const options = request.parseParams(request.all())
       const result = await this.service.getAll(options)
@@ -24,7 +25,7 @@ export default class ActuatorController {
     }
   }
 
-  public async store ({ request, response }: HttpContextContract) {
+  public async store({ request, response }: HttpContextContract) {
     try {
       await request.validate(CreateActuatorValidator)
       const data = request.only(this.FETCHED_ATTRIBUTE)
@@ -39,7 +40,7 @@ export default class ActuatorController {
     }
   }
 
-  public async show ({ params, request, response }: HttpContextContract) {
+  public async show({ params, request, response }: HttpContextContract) {
     try {
       const options = request.parseParams(request.all())
       const result = await this.service.show(params.id, options)
@@ -52,7 +53,7 @@ export default class ActuatorController {
     }
   }
 
-  public async update ({ params, request, response }: HttpContextContract) {
+  public async update({ params, request, response }: HttpContextContract) {
     try {
       await request.validate(UpdateActuatorValidator)
       const data = request.only(this.FETCHED_ATTRIBUTE)
@@ -70,7 +71,7 @@ export default class ActuatorController {
     }
   }
 
-  public async destroy ({ params, response }: HttpContextContract) {
+  public async destroy({ params, response }: HttpContextContract) {
     try {
       const result = await this.service.delete(params.id)
       if (!result) {
@@ -82,7 +83,7 @@ export default class ActuatorController {
     }
   }
 
-  public async destroyAll ({ response }: HttpContextContract) {
+  public async destroyAll({ response }: HttpContextContract) {
     try {
       await this.service.deleteAll()
       return response.api(null, 'All Actuator deleted!')
@@ -91,65 +92,65 @@ export default class ActuatorController {
     }
   }
 
-    /**
-   * @swagger
-   * /api/actuators/{id}/control:
-   * post:
-   * tags:
-   * - Actuators
-   * summary: Send a command to control a specific actuator.
-   * parameters:
-   * - in: path
-   * name: id
-   * schema:
-   * type: integer
-   * required: true
-   * description: The numeric ID of the actuator to control.
-   * requestBody:
-   * required: true
-   * content:
-   * application/json:
-   * schema:
-   * type: object
-   * properties:
-   * action:
-   * type: string
-   * enum: [ON, OFF]
-   * description: The command to send to the relay.
-   * triggeredBy:
-   * type: string
-   * description: "Who or what triggered the action (e.g., 'User: John Doe', 'Automation Rule')."
-   * required:
-   * - action
-   * - triggeredBy
-   * responses:
-   * 200:
-   * description: Command sent successfully.
-   * content:
-   * application/json:
-   * schema:
-   * type: object
-   * properties:
-   * message:
-   * type: string
-   * log:
-   * $ref: '#/components/schemas/ActuatorControlLog'
-   * 404:
-   * description: Actuator not found.
-   * 422:
-   * description: Validation error (e.g., invalid action).
-   */
+  /**
+ * @swagger
+ * /api/actuators/{id}/control:
+ * post:
+ * tags:
+ * - Actuators
+ * summary: Send a command to control a specific actuator.
+ * parameters:
+ * - in: path
+ * name: id
+ * schema:
+ * type: integer
+ * required: true
+ * description: The numeric ID of the actuator to control.
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * action:
+ * type: string
+ * enum: [ON, OFF]
+ * description: The command to send to the relay.
+ * triggeredBy:
+ * type: string
+ * description: "Who or what triggered the action (e.g., 'User: John Doe', 'Automation Rule')."
+ * required:
+ * - action
+ * - triggeredBy
+ * responses:
+ * 200:
+ * description: Command sent successfully.
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * message:
+ * type: string
+ * log:
+ * $ref: '#/components/schemas/ActuatorControlLog'
+ * 404:
+ * description: Actuator not found.
+ * 422:
+ * description: Validation error (e.g., invalid action).
+ */
 
-  public async control({ request, response }: HttpContextContract) {
+  public async control( { params, request, response }: HttpContextContract) {
     try {
-      // Get actuator ID from the URL
-      const actuatorId = request.param('id')
-
       // Validate the request payload
       const payload = await request.validate(ActuatorControlValidator)
 
+      // Get the slug from the URL.
+      const slug = params.slug
+
       // Call the service to handle the logic
-      const log = await this.service.controlActuator(actuatorId, payload)
+      const log = await this.service.controlActuator(slug, payload)
 
       return response.ok({
         message: 'Command sent successfully to the actuator.',

@@ -8,15 +8,15 @@ export default class ActuatorRepository extends BaseRepository {
 
   /**
    * Finds a record by its ID or throws a custom exception if not found.
-   * @param id The ID of the record.
+   * @param slug The slug of the record.
    * @returns The Actuator model instance.
    */
-  public async findOrFail(id: number): Promise<Actuator> {
-    const record = this.model.find(id)
+  public async findOrFail(slug: string): Promise<Actuator> {
+    const record = this.find(slug)
     if (!record) {
-      throw new Error(`Actuator with ID ${id} was not found.`)
+      throw new Error(`Actuator named ${slug} was not found.`)
     }
-    return record as Actuator
+    return record as unknown as Actuator
   }
 
   /**
@@ -24,7 +24,7 @@ export default class ActuatorRepository extends BaseRepository {
    * @param id The ID of the record.
    * @returns The Actuator model instance or null.
    */
-  public async find(id: number): Promise<Actuator | null> {
-    return await Actuator.find(id)
+  public async find(slug: string): Promise<Actuator | null> {
+    return await Actuator.findByOrFail('slug', slug)
   }
 }

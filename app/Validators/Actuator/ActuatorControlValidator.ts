@@ -25,10 +25,6 @@ export default class ActuatorControlValidator {
    */
   public schema = schema.create({
     action: schema.enum(['ON', 'OFF'] as const),
-    triggeredBy: schema.string([
-      rules.trim(),
-      rules.minLength(3)
-    ]),
   })
 
   /**
@@ -45,7 +41,5 @@ export default class ActuatorControlValidator {
   public messages: CustomMessages = {
     'action.required': 'Action is required',
     'action.enum': 'Action must be either ON or OFF',
-    'triggeredBy.required': 'Triggered by is required',
-    'triggeredBy.minLength': 'Triggered by must be at least 3 characters long',
   }
 }
