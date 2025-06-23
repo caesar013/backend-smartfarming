@@ -140,7 +140,7 @@ export default class ActuatorController {
  * description: Validation error (e.g., invalid action).
  */
 
-  public async control( { params, request, response, auth }: HttpContextContract) {
+  public async control({ params, request, response, auth }: HttpContextContract) {
     try {
       // Validate the request payload
       const payload = await request.validate(ActuatorControlValidator)
@@ -165,6 +165,26 @@ export default class ActuatorController {
         error: error.message,
         details: error.messages || {}
       })
+    }
+  }
+
+  /**
+ * This method replaces the old 'getRelayStatus' functionality.
+ * It handles a GET request to fetch the last known status of all actuators
+ * from the database logs.
+ * Route: GET /api/v1/actuators/status
+ */
+  public async getStatus({ response }: HttpContextContract) {
+    try {
+      // Call the service to get the status of all actuators
+      const statuses = await this.service.getStatusOfAllActuators()
+
+      return response.ok({
+        data: statuses,
+        message: 'Successfully fetched the status of all actuators.',
+      })
+    } catch (error) {
+      return response.error(error.message)
     }
   }
 }

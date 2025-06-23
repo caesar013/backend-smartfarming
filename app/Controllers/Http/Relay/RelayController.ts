@@ -23,10 +23,13 @@ export default class RelayController {
    * OLD ROUTE: GET /relay/get-relay
    * NEW LOGIC: ActuatorsService.getStatusOfAllActuators()
    */
-  public async getRelayStatus(ctx: HttpContextContract) {
+  public async getRelayStatus() {
     console.log('LOG: Received request on DEPRECATED /relay/get-relay endpoint. This endpoint is deprecated and will be removed in the future. Redirecting...');
 
-    // return this.actuatorService.getStatusOfAllActuators(ctx)
+    return {
+      data: await this.actuatorService.getStatusOfAllActuators(),
+      message: 'This endpoint is deprecated. Use /actuators/status instead.',
+    }
   }
 
   /**

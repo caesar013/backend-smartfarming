@@ -82,4 +82,11 @@ export default class ActuatorService extends BaseService {
       throw error;
     }
   }
+
+  /**
+   * This is a method for getting the statuses of all actuators.
+   */
+  public async getStatusOfAllActuators(): Promise<any[]> {
+    return this.repository.getLatestStatusOfAll()
+  }
 }
