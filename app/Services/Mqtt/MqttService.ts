@@ -1,6 +1,7 @@
 import Env from '@ioc:Adonis/Core/Env'
 import SensorReadingService from 'App/Services/SensorReading/SensorReadingService';
 import mqtt from "mqtt";
+import EventEmitter from 'events';
 
 /**
  * Encapsulates the MQTT client and its event handling.
@@ -8,6 +9,7 @@ import mqtt from "mqtt";
  */
 class MqttService {
   public client: mqtt.MqttClient;
+  private emitter: EventEmitter = new EventEmitter();
 
   constructor() {
     this.client = mqtt.connect(`mqtt://${Env.get('MQTT_URL')}`, {
@@ -34,8 +36,12 @@ class MqttService {
         }
       });
 
-      // You can add other subscriptions here, for example, to get status feedback from actuators
-      // this.client.subscribe('farm/actuator/+/status');
+      // Subscribe to a single topic for actuator commands AND replies
+      this.client.subscribe('farm/actuator', { qos: 1 }, (err) => {
+        if (!err) {
+          console.log("Subscribed successfully to actuator topic.")
+        }
+      })
     });
 
     this.client.on('message', async (topic, message) => {
@@ -47,12 +53,24 @@ class MqttService {
           const service = new SensorReadingService();
           await service.handleIncomingMessage(msg);
         } catch (e) {
-            console.error("Failed to process incoming sensor message:", e);
+          console.error("Failed to process incoming sensor message:", e);
         }
       }
 
       // Handle other topics like actuator status feedback
-      // if (topic.startsWith('farm/actuator/')) { ... }
+      if (topic === 'farm/actuator') {
+        try {
+          const data = JSON.parse(message.toString())
+
+          // Check if the message is a status reply and has a correlation ID
+          if (data.type === 'status_reply' && data.correlationId) {
+            // Emit the event with the correlation ID
+            this.emitter.emit(data.correlationId, data)
+          }
+        } catch (e) {
+          console.error("Could not parse incoming actuator JSON:", message.toString())
+        }
+      }
     });
 
     this.client.on('reconnect', () => console.log('Reconnecting to MQTT broker...'));
@@ -74,7 +92,33 @@ class MqttService {
   }
 
   public get connected(): boolean {
-      return this.client.connected;
+    return this.client.connected;
+  }
+
+  /**
+   * Waits for a specific reply identified by a correlation ID.
+   * @param correlationId The unique ID of the command to wait for.
+   * @param timeout Duration in milliseconds.
+   * @returns A Promise that resolves with the reply payload from the ESP32.
+   */
+  public waitForResponse(correlationId: string, timeout: number): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let timeoutId: NodeJS.Timeout;
+
+      const listener = (payload: any) => {
+        clearTimeout(timeoutId);
+        resolve(payload);
+      };
+
+      // Listen for a one-time event named after the correlationId
+      this.emitter.once(correlationId, listener);
+
+      // Set a timeout for the response
+      timeoutId = setTimeout(() => {
+        this.emitter.removeListener(correlationId, listener); // Clean up listener on timeout
+        reject(new Error(`Timeout: No response received for correlationId '${correlationId}' within ${timeout}ms.`));
+      }, timeout);
+    });
   }
 }
 

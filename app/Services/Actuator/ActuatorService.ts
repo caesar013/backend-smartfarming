@@ -2,6 +2,8 @@ import BaseService from "App/Base/Services/BaseService"
 import ActuatorRepository from "App/Repositories/Actuator/ActuatorRepository"
 import ActuatorControlLogRepository from "App/Repositories/ActuatorControlLog/ActuatorControlLogRepository"
 import mqttClient from "App/Services/Mqtt/MqttService"
+import { v4 as uuidv4 } from 'uuid';
+import TimeoutException from 'App/Exceptions/TimeoutException'
 
 interface ControlPayload {
   action: 'ON' | 'OFF'
@@ -21,32 +23,63 @@ export default class ActuatorService extends BaseService {
    * @param username The username of the user triggering the action.
    * @returns The newly created control log.
    */
-  public async controlActuator(slug: string, payload: ControlPayload, username: string): Promise<any> {
+  public async controlActuator(slug: string, payload: ControlPayload, triggeredBy?: string): Promise<any> {
     // 1. Find the actuator to get its relay pin number
     const actuator = await this.repository.findOrFail(slug)
 
     // 2. Define the MQTT topic and message payload
     // The topic is specific to the actuator's relay pin.
-    // The ESP32 will listen on a wildcard topic like 'farm/actuator/+/command'
     // and use the pin number from the topic to control the correct relay.
-    const topic = `farm/actuator/${actuator.relayPin}/command`
-    const message = payload.action // 'ON' or 'OFF'
+    const topic = `farm/actuator`
 
-    // 3. Publish the message to the MQTT broker
-    // Ensure the client is connected before publishing
     if (!mqttClient.connected) {
       throw new Error("MQTT client is not connected. Cannot send command.")
     }
-    await mqttClient.publishAsync(topic, message, { qos: 1 }) // QoS 1 for "at least once" delivery
+    try {
+      // 1. Generate a unique correlation ID for this command
+      // This ID will link this command to its specific response.
+      const correlationId = uuidv4()
 
-    // 4. Create a log entry for this action
-    const logData = {
-      actuatorId: actuator.id,
-      action: payload.action,
-      triggeredBy: username, // Placeholder for who triggered the action
+      // 2. Construct the JSON payload for the command
+      const commandPayload = {
+        type: 'command',
+        action: payload.action,
+        pin: actuator.relayPin, // Use the relay pin from the actuator
+        correlationId: correlationId, // Include the correlation ID
+      }
+
+      // 3. Start waiting for a response from the ESP32
+      // This will block until a response is received or a timeout occurs, 10 seconds.
+      const responsePromise = mqttClient.waitForResponse(correlationId, 10000);
+
+      // 4. Publish the command to the MQTT topic
+      await mqttClient.publishAsync(topic, JSON.stringify(commandPayload), { qos: 1 })
+
+      console.log(`Publishing command to ${actuator.name} with correlation ID: ${correlationId}`)
+
+      // 5. Wait here for the response from the ESP32
+      const responsePayload = await responsePromise
+
+      // 6. Check the status of the response from the ESP32
+      if (responsePayload.status !== 'SUCCESS') {
+        throw new Error(`Failed to control actuator with pin ${responsePayload.pin}. Status: ${responsePayload.status}`);
+      }
+
+      // 7. If successful, log the action in the database
+      const logData = {
+        actuatorId: actuator.id,
+        action: payload.action,
+        triggeredBy: triggeredBy || 'System', // Placeholder for who triggered the action
+      }
+      const logResponse = await this.logRepository.create(logData)
+      return logResponse
+    } catch (error) {
+      // Specifically handle the timeout error to return a 504 status code.
+      if (error.message.startsWith('Timeout')) {
+        throw new TimeoutException(error.message);
+      }
+      // Re-throw any other errors.
+      throw error;
     }
-    const newLog = await this.logRepository.create(logData)
-
-    return newLog
   }
 }
