@@ -38,7 +38,6 @@ export default class ActuatorRepository extends BaseRepository {
     // hiding sensitive or unnecessary information like relay_pin and type_id.
     const query = `
       SELECT
-          a.id,
           a.name,
           COALESCE(log.action, 'OFF') AS "currentStatus",
           log.created_at AS "lastChangedAt",
