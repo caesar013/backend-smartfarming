@@ -27,30 +27,6 @@ export default class SensorReadingService extends BaseService {
 
   public async search(filters?: any) {
     const { isLatest } = filters || {}
-    // if (isLatest) {
-    //   const latestReadings = await this.repository.getLatestReadings()
-
-    //   const formattedReadings = latestReadings.reduce((accumulator, currentReading) => {
-    //     const sensor_name = currentReading.name.replace('_', '').toLowerCase() // Convert to lowercase and remove underscores
-    //     accumulator[sensor_name] = currentReading.payload
-    //     return accumulator
-    //   }, {})
-
-    //   return formattedReadings
-    // }
-
-    // const { startDate, endDate } = this.determineDateRange(filters.range)
-
-    // const searchOptions = {
-    //   sensors: filters?.sensor,
-    //   metrics: filters?.metric,
-    //   // default to HOURLY if not provided
-    //   interval: filters.range?.time_range === 'HOURLY' ? 'hour' : 'day', // Default to HOURLY if not provided
-    //   startDate: startDate.toISO(), // Convert to  ISO date string
-    //   endDate: endDate.toISO(),
-    // }
-
-    // return this.repository.search(searchOptions)
 
     if (isLatest) {
       const latestReadings = await this.repository.getLatestReadings()
