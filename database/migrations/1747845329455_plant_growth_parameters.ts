@@ -8,15 +8,12 @@ export default class extends BaseSchema {
       table.increments('id').primary()
       table.integer('plant_id').unsigned().notNullable().references('id').inTable('plants').onDelete('CASCADE')
       table.integer('growth_stage_id').unsigned().notNullable().references('id').inTable('growth_stages').onDelete('CASCADE')
-      table.smallint('min_age').notNullable()
-      table.smallint('max_age').nullable()
-      table.smallint('min_n').notNullable()
-      table.smallint('max_n').nullable()
-      table.smallint('min_p').notNullable()
-      table.smallint('max_p').nullable()
-      table.smallint('min_k').notNullable()
-      table.smallint('max_k').nullable()
-
+      table.smallint('min_age').notNullable() // Minimum age in days
+      table.smallint('max_age').nullable() // Maximum age in days
+      table.smallint('min_soil_ec').notNullable() // Minimum electrical conductivity in μS/cm
+      table.smallint('max_soil_ec').nullable() // Maximum electrical conductivity in μS/cm
+      table.smallint('min_soil_humidity').notNullable() // Minimum humidity content in %
+      table.smallint('max_soil_humidity').nullable() // Maximum humidity content in %
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */
