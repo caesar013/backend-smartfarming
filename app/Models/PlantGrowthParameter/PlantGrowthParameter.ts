@@ -19,23 +19,17 @@ export default class PlantGrowthParameter extends BaseModel {
   @column({ serializeAs: 'maxAge' })
   public maxAge: number | null
 
-  @column({ serializeAs: 'minN' })
-  public minN: number
+  @column({ serializeAs: 'minSoilEc' })
+  public minSoilEc: number
 
-  @column({ serializeAs: 'maxN' })
-  public maxN: number | null
+  @column({ serializeAs: 'maxSoilEc' })
+  public maxSoilEc: number | null
 
-  @column({ serializeAs: 'minP' })
-  public minP: number
+  @column({ serializeAs: 'minSoilHumidity' })
+  public minSoilHumidity: number
 
-  @column({ serializeAs: 'maxP' })
-  public maxP: number | null
-
-  @column({ serializeAs: 'minK' })
-  public minK: number
-
-  @column({ serializeAs: 'maxK' })
-  public maxK: number | null
+  @column({ serializeAs: 'maxSoilHumidity' })
+  public maxSoilHumidity: number | null
 
   @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
   public createdAt: DateTime
