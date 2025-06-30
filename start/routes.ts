@@ -57,7 +57,4 @@ Route.get('/api', async () => {
   return 'Hello World!';
 })
 
-// Route.post('/api/iotPost', async ({ request }) => {
-// });
-
 Route.on('*').render('index')
