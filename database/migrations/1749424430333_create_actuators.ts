@@ -11,6 +11,8 @@ export default class extends BaseSchema {
       table.integer('bed_location_id').unsigned().references('id').inTable('bed_locations').onDelete('SET NULL').nullable()
 
       table.string('name', 255).notNullable()
+      table.string('slug').unique().notNullable()
+      table.integer('relay_pin').notNullable().unsigned().unique()
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

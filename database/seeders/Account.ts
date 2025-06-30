@@ -16,6 +16,15 @@ export default class extends BaseSeeder {
         fullname: 'Administrator',
         google_id: '1'
       },
+      {
+        email: 'minchy@gmail.com',
+        // Use Hash to hash the password
+        password: await Hash.make('minchy2025'),
+        urole_id: role?.id,
+        username: 'Minchy',
+        fullname: 'Minchy Cholatte',
+        google_id: '2'
+      }
     ])
   }
 }

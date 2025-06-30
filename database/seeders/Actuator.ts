@@ -7,43 +7,45 @@ export default class extends BaseSeeder {
 
       {
         name: 'Valve 1',
+        slug: 'valve-1',
         actuatorTypeId: 2,
-        bedLocationId: 1,
+        bedLocationId: 2,
+        relayPin: 97, // will be 14
       },
       {
         name: 'Valve 2',
+        slug: 'valve-2',
         actuatorTypeId: 2,
-        bedLocationId: 2,
+        bedLocationId: 3,
+        relayPin: 98, // will be 27
       },
       {
         name: 'Valve 3',
-        actuatorTypeId: 2,
-        bedLocationId: 3,
-      },
-      {
-        name: 'Valve 4',
+        slug: 'valve-3',
         actuatorTypeId: 2,
         bedLocationId: 4,
+        relayPin: 99, // will be 26
       },
       {
-        name: 'Water Pump',
+        name: 'Pump',
+        slug: 'pump',
         actuatorTypeId: 1,
         bedLocationId: null,
-      },
-      {
-        name: 'Nutrient Pump',
-        actuatorTypeId: 1,
-        bedLocationId: null,
+        relayPin: 25,
       },
       {
         name: 'Water Valve',
+        slug: 'water-valve',
         actuatorTypeId: 2,
         bedLocationId: null,
+        relayPin: 33,
       },
       {
         name: 'Nutrient Valve',
+        slug: 'nutrient-valve',
         actuatorTypeId: 2,
         bedLocationId: null,
+        relayPin: 32,
       }
     ])
   }
