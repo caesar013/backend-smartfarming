@@ -13,6 +13,8 @@ COPY --chown=node:node ./package*.json ./
 RUN npm ci
 COPY --chown=node:node . .
 
+RUN chmod +x ./dockerConfig/run.sh
+
 USER root
 
 # === PERUBAHAN KUNCI DI SINI ===
