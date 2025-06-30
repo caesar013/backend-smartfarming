@@ -167,4 +167,32 @@ export default class SensorReadingService extends BaseService {
   private isValidSensorMessage(data: unknown): data is SensorMessage {
     return typeof data === 'object' && data !== null
   }
+
+  /**
+   * Get the latest sensor readings.
+   * @param sensorId - ID of the sensor to fetch readings for.
+   * @param maxAgeInMinutes - Maximum age of the readings in minutes.
+   * @returns Object containing the latest sensor readings.
+   */
+  public async getLatestReadings(sensorId: number, maxAgeInMinutes: number = 60) {
+    try {
+      // Fetch the latest readings from the repository
+      const latestReadings = await this.repository.getLatestReadings(sensorId, maxAgeInMinutes)
+
+      // If no readings are found, return null
+      if (!latestReadings || latestReadings.length === 0) {
+        return null
+      }
+
+      return latestReadings.map(({ payload, ...rest }) => ({
+        ...rest,
+        ...payload
+      }))[0]
+
+
+    } catch (error) {
+      console.error('Error fetching latest sensor readings:', error)
+      return null
+    }
+  }
 }
