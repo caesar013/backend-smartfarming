@@ -23,15 +23,13 @@ export default class AuthController {
     try {
       const registerValidation = schema.create({
         username: schema.string({}, [
-          rules.maxLength(25),
-          rules.unique({ table: 'user.account', column: 'username' }),
+          rules.maxLength(25)
         ]),
         password: schema.string({}, [
           rules.minLength(8)
         ]),
         email: schema.string({}, [
-          rules.email(),
-          rules.unique({ table: 'user.account', column: 'email' }),
+          rules.email()
         ]),
         fullname: schema.string(),
       });
