@@ -23,7 +23,9 @@ RUN apk --no-cache add su-exec
 
 # Salin skrip entrypoint dan pastikan bisa dieksekusi
 COPY dockerConfig/docker-entrypoint.sh /usr/local/bin/
+COPY dockerConfig/cronjobs /etc/cron.d/automation-cron
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN chmod 0644 /etc/cron.d/automation-cron
 
 # Tetapkan entrypoint. Ini akan berjalan sebagai ROOT.
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

@@ -22,13 +22,10 @@ export default class PlantParameterService {
 
       // Return the relevant parameters as an object
       return {
-        growthStageId: parameters.growthStageId,
-        minAge: parameters.minAge,
-        maxAge: parameters.maxAge,
         minSoilEc: parameters.minSoilEc,
-        maxSoilEc: parameters.maxSoilEc,
+        maxSoilEc: parameters.maxSoilEc || parameters.minSoilEc + 300,
         minSoilHumidity: parameters.minSoilHumidity,
-        maxSoilHumidity: parameters.maxSoilHumidity,
+        maxSoilHumidity: parameters.maxSoilHumidity || parameters.minSoilHumidity + 20,
       }
     } catch (error) {
       console.error('Error saat mengambil parameter pertumbuhan:', error)

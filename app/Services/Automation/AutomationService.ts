@@ -1,14 +1,17 @@
 import PlantParameterService from "App/Services/PlantParameter/PlantParameterService"
 import SensorReadingService from "../SensorReading/SensorReadingService";
+import FuzzyDecisionService from "../FuzzyDecision/FuzzyDecisionService";
 
 export default class AutomationService {
   // Initialize required services
   constructor(
     private plantParameterService: PlantParameterService,
-    private sensorReadingService: SensorReadingService
+    private sensorReadingService: SensorReadingService,
+    private fuzzyDecisionService: FuzzyDecisionService
   ) { }
 
   public async automate() {
+    const PUMP_LATENCY_SECONDS = 35; // Delay before the pump starts
     console.log('--- AUTOMATION BEGINS ---')
 
     // Asumsi untuk pengujian: kita cek untuk stroberi (plantId: 1) berumur 70 hari
@@ -43,8 +46,18 @@ export default class AutomationService {
     console.log(`   - Actual Humidity: ${actualReadings.soilHumidity} %`)
     console.log('---------------------------------')
 
+    // 4. Use Fuzzy Logic to make decisions
     // This is where the fuzzy logic would be applied to make decisions
-    console.log('[DECISION]: ... (Fuzzy Logic hasn\'t been implemented yet) ...')
+    const effectiveDuration = this.fuzzyDecisionService.calculatePumpDuration(targetParams, actualReadings)
+
+    let totalPumpDuration = 0;
+    if (effectiveDuration > 0) {
+      totalPumpDuration = Math.round(effectiveDuration + PUMP_LATENCY_SECONDS);
+    }
+
+    console.log(`[DECISION] Effective Pump Duration: ${effectiveDuration} seconds`)
+    console.log(`[DECISION] Total Pump Duration (including latency): ${totalPumpDuration} seconds`)
+    console.log('---------------------------------')
     console.log('--- AUTOMATION CYCLE ENDED ---')
   }
 }
