@@ -1,63 +1,161 @@
 import PlantParameterService from "App/Services/PlantParameter/PlantParameterService"
-import SensorReadingService from "../SensorReading/SensorReadingService";
-import FuzzyDecisionService from "../FuzzyDecision/FuzzyDecisionService";
+import SensorReadingService from "../SensorReading/SensorReadingService"
+import FuzzyDecisionService from "../FuzzyDecision/FuzzyDecisionService"
+import ActuatorService from "../Actuator/ActuatorService"
+import BatchLocation from "App/Models/BatchLocation"
+import { DateTime } from "luxon"
 
 export default class AutomationService {
   // Initialize required services
   constructor(
     private plantParameterService: PlantParameterService,
     private sensorReadingService: SensorReadingService,
-    private fuzzyDecisionService: FuzzyDecisionService
+    private fuzzyDecisionService: FuzzyDecisionService,
+    private actuatorService: ActuatorService
   ) { }
 
+  /**
+   * Main automation function that orchestrates the entire process
+   * @returns {Promise<void>}
+   */
   public async automate() {
-    const PUMP_LATENCY_SECONDS = 35; // Delay before the pump starts
-    console.log('--- AUTOMATION BEGINS ---')
+    console.log('--- GLOBAL AUTOMATION CYCLE BEGINS ---')
 
-    // Asumsi untuk pengujian: kita cek untuk stroberi (plantId: 1) berumur 70 hari
-    const plantId = 1
-    const currentAge = 70
-    const sensorId = 2
+    // 1. Get all batch locations and preload the data we need.
+    // This complex query prevents multiple database calls inside a loop.
+    const allBatchLocations = await BatchLocation.query()
+      .whereHas('plantingBatch', (batchQuery) => {
+        // Only get batches that are not yet harvested or deleted
+        batchQuery
+          .where('plant_id', 1)
+          .whereNull('harvest_date')
+      })
+      .preload('plantingBatch', (batchQuery) => {
+        batchQuery.preload('plant')
+      })
+      .preload('bedLocation', (bedQuery) => {
+        // Preload the 'sensors' and actuators array
+        bedQuery.preload('sensors').preload('actuators')
+      })
 
-    // 1. Get TARGET PARAMETERS for the plant at the current age
-    const targetParams = await this.plantParameterService.getParametersByAge(plantId, currentAge)
+    console.log(`Loaded ${allBatchLocations[0]}.`)
 
+    console.log(`Found ${allBatchLocations.length} batch locations to process.`)
+// 2. Loop through each one and process it.
+    for (const batchLocation of allBatchLocations) {
+      // We check if all necessary data was loaded before processing.
+      if (batchLocation.plantingBatch && batchLocation.bedLocation && batchLocation.bedLocation.sensors && batchLocation.bedLocation.actuators) {
+        await this.processSingleBatchLocation(batchLocation)
+      } else {
+        console.warn(`Skipping a batch location due to incomplete data.`)
+      }
+    }
+
+    console.log('--- GLOBAL AUTOMATION CYCLE ENDED ---')
+  }
+
+  /**
+   * Processes the automation logic for a single BatchLocation.
+   */
+  private async processSingleBatchLocation(batchLocation: BatchLocation) {
+    const PUMP_LATENCY_SECONDS = 35
+    const PUMP_ACTUATOR_SLUG = 'pump'
+    const NUTRIENT_VALVE_SLUG = 'nutrient_valve'
+
+    // Find the NPK sensor by its unique public name
+    const npkSensor = batchLocation.bedLocation.sensors.find(sensor => sensor.publicName === 'npk1')
+
+    // Find the actuator by its slug
+    // const valve = batchLocation.bedLocation.actuators.find(actuator => actuator.slug === 'valve1')
+
+    if (!npkSensor) {
+      console.warn(`No NPK sensor found for plot ${batchLocation.bedLocation.name}. Skipping.`)
+      return
+    }
+    // if (!valveSlug) {
+    //   console.warn(`No nutrient valve actuator found for plot ${batchLocation.bedLocation.name}. Skipping.`)
+    //   return
+    // }
+
+    // Extract all necessary info from the preloaded data
+    const sensorId = npkSensor.id
+    // const actuatorSlug = valve.slug
+    const plantId = batchLocation.plantingBatch.plantId
+    const plantAge = Math.floor(DateTime.now().diff(batchLocation.plantingBatch.plantingDate, 'days').days)
+    const plotName = batchLocation.bedLocation.name
+
+    console.log(`\n--- Processing Plot: ${plotName} (Using Sensor: ${npkSensor.publicName}, Actuator: ${PUMP_ACTUATOR_SLUG}, ${NUTRIENT_VALVE_SLUG}) ---`);
+
+    // The rest of the logic is identical to before, now using dynamic variables
+    const targetParams = await this.plantParameterService.getParametersByAge(plantId, plantAge)
     if (!targetParams) {
-      console.log('AUTOMATION FAILED: Couldn\'t retrieve target parameters. Stopping...')
+      console.log('Failed to get target parameters for this age. Skipping.')
       return
     }
 
-    // 2. Get ACTUAL SENSOR READINGS
-    // Get the latest readings for the specified sensor in the last 60 minutes
     const actualReadings = await this.sensorReadingService.getLatestReadings(sensorId, 60)
-
     if (!actualReadings) {
-      console.log('AUTOMATION FAILED: Couldn\'t retrieve sensor data. Stopping...')
+      console.log('Failed to get recent sensor data. Skipping.')
       return
     }
 
-    // 3. Compare and display the results in the console
-    console.log(`[TARGET FOR AGE ${currentAge} DAYS]`)
-    console.log(`   - EC Target: ${targetParams.minSoilEc} - ${targetParams.maxSoilEc} µS/cm`)
-    console.log(`   - Humidity Target: ${targetParams.minSoilHumidity} - ${targetParams.maxSoilHumidity} %`)
-    console.log('---')
-    console.log('[ACTUAL READINGS]')
-    console.log(`   - Actual EC: ${actualReadings.soilConductivity} µS/cm`)
-    console.log(`   - Actual Humidity: ${actualReadings.soilHumidity} %`)
-    console.log('---------------------------------')
-
-    // 4. Use Fuzzy Logic to make decisions
-    // This is where the fuzzy logic would be applied to make decisions
     const effectiveDuration = this.fuzzyDecisionService.calculatePumpDuration(targetParams, actualReadings)
-
-    let totalPumpDuration = 0;
+    let totalPumpDuration = 0
     if (effectiveDuration > 0) {
-      totalPumpDuration = Math.round(effectiveDuration + PUMP_LATENCY_SECONDS);
+      totalPumpDuration = Math.round(effectiveDuration + PUMP_LATENCY_SECONDS)
     }
 
-    console.log(`[DECISION] Effective Pump Duration: ${effectiveDuration} seconds`)
-    console.log(`[DECISION] Total Pump Duration (including latency): ${totalPumpDuration} seconds`)
-    console.log('---------------------------------')
-    console.log('--- AUTOMATION CYCLE ENDED ---')
+    console.log(`Decision: Effective Duration=${effectiveDuration}s, Total Duration=${totalPumpDuration}s`)
+
+    if (totalPumpDuration > 0) {
+      console.log(`[AKTUATOR] Starting watering cycle for '${PUMP_ACTUATOR_SLUG}'...`)
+
+      // Turn ON the pump with retry logic
+      await this.sendCommandWithRetry(NUTRIENT_VALVE_SLUG, 'ON')
+      const pumpTurnOnSuccess = await this.sendCommandWithRetry(PUMP_ACTUATOR_SLUG, 'ON')
+
+      // Only proceed if turning ON was successful
+      if (pumpTurnOnSuccess) {
+        // Wait for the calculated duration
+        console.log(`[AKTUATOR] Pump is ON. Waiting for ${totalPumpDuration} seconds...`)
+        await new Promise(resolve => setTimeout(resolve, totalPumpDuration * 1000))
+
+        // Turn OFF the pump with retry logic
+        console.log(`[AKTUATOR] Time is up. Turning OFF pump '${PUMP_ACTUATOR_SLUG}'...`)
+        await this.sendCommandWithRetry(PUMP_ACTUATOR_SLUG, 'OFF')
+        await this.sendCommandWithRetry(NUTRIENT_VALVE_SLUG, 'OFF')
+      } else {
+        console.error(`[AKTUATOR] Failed to turn on pump '${PUMP_ACTUATOR_SLUG}'. Aborting watering cycle.`)
+      }
+    } else {
+      console.log('[AKTUATOR] No action needed.')
+    }
+
+    console.log(`--- Cycle for Plot: ${plotName} finished ---`)
+  }
+
+  /**
+   * Helper method to send a command with retry logic.
+   * @param slug - The actuator's slug.
+   * @param action - The action to perform ('ON' or 'OFF').
+   * @param maxRetries - The maximum number of times to retry.
+   * @returns True if successful, false otherwise.
+   */
+  private async sendCommandWithRetry(slug: string, action: 'ON' | 'OFF', maxRetries: number = 3): Promise<boolean> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await this.actuatorService.controlActuator(slug, { action }, 'System')
+        console.log(`[ACTUATOR] Attempt ${attempt}: Command '${action}' for '${slug}' successful.`)
+        return true // Command succeeded, exit the loop.
+      } catch (error) {
+        console.error(`[AKTUATOR] Attempt ${attempt} failed for action '${action}' on '${slug}':`, error.message)
+        if (attempt < maxRetries) {
+          console.log(`[AKTUATOR] Retrying in 5 seconds...`)
+          await new Promise(resolve => setTimeout(resolve, 5000)) // Wait 5 seconds before retrying.
+        }
+      }
+    }
+    console.error(`[AKTUATOR] All ${maxRetries} attempts failed for action '${action}' on '${slug}'. Giving up.`)
+    return false // All retries failed.
   }
 }
