@@ -2,6 +2,7 @@ import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column, HasMa
 import { DateTime } from 'luxon'
 import BedLocation from '../BedLocation/BedLocation'
 import SensorReading from '../SensorReading/SensorReading'
+import SensorType from '../SensorType/SensorType'
 
 export default class Sensor extends BaseModel {
   public static softDelete = true
@@ -17,6 +18,9 @@ export default class Sensor extends BaseModel {
 
   @column({ serializeAs: 'publicName' })
   public publicName: string
+
+  @column({ serializeAs: 'sensorTypeId' })
+  public sensorTypeId: number | null
 
   @column()
   public desc: string | null
@@ -49,4 +53,7 @@ export default class Sensor extends BaseModel {
 
   @hasMany(() => SensorReading)
   public readings: HasMany<typeof SensorReading>
+
+  @belongsTo(() => SensorType)
+  public sensorType: BelongsTo<typeof SensorType>
 }
