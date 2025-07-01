@@ -8,7 +8,7 @@ export default class SensorReadingController {
 
   public async getLatest({ response }: HttpContextContract) {
     try {
-      const result = await this.service.search({ isLatest: true })
+      const result = await this.service.getLatestReadings()
       return response.api(result, 'Search results', 200)
     } catch (error) {
       return response.error(error.message)

@@ -29,7 +29,6 @@ export default class SensorReadingRepository extends BaseRepository {
     if (sensorId && maxAgeInMinutes) {
       // Set the earliest timestamp to fetch readings from
       const earliestTimestamp = DateTime.now().minus({ minutes: maxAgeInMinutes }).toUTC()
-      console.log(earliestTimestamp.toSQL());
 
       // Build the query to fetch readings for a specific sensor within the max age limit
       const query = `

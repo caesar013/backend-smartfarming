@@ -26,16 +26,6 @@ export default class SensorReadingService extends BaseService {
   }
 
   public async search(filters?: any) {
-    const { isLatest } = filters || {}
-
-    if (isLatest) {
-      const latestReadings = await this.repository.getLatestReadings()
-
-      return Object.fromEntries(
-        latestReadings.map(reading => [reading.name, reading.payload])
-      )
-    }
-
     const { startDate, endDate } = this.determineDateRange(filters.range)
 
     const searchOptions = {
@@ -174,8 +164,23 @@ export default class SensorReadingService extends BaseService {
    * @param maxAgeInMinutes - Maximum age of the readings in minutes.
    * @returns Object containing the latest sensor readings.
    */
-  public async getLatestReadings(sensorId: number, maxAgeInMinutes: number = 60) {
+  public async getLatestReadings(sensorId?: number, maxAgeInMinutes: number = 60) {
     try {
+
+      // If no sensorId is provided, fetch the latest readings for all sensors
+      if (!sensorId) {
+        const latestReadings = await this.repository.getLatestReadings()
+        if (!latestReadings || latestReadings.length === 0) {
+          return null
+        }
+
+        return Object.fromEntries(
+          latestReadings.map(reading => [
+            reading.name,
+            reading.payload
+          ])
+        )
+      }
       // Fetch the latest readings from the repository
       const latestReadings = await this.repository.getLatestReadings(sensorId, maxAgeInMinutes)
 
