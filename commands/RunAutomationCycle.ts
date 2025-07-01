@@ -1,4 +1,5 @@
 import { BaseCommand } from '@adonisjs/core/build/standalone'
+import ActuatorService from 'App/Services/Actuator/ActuatorService'
 import AutomationService from 'App/Services/Automation/AutomationService'
 import FuzzyDecisionService from 'App/Services/FuzzyDecision/FuzzyDecisionService'
 import PlantParameterService from 'App/Services/PlantParameter/PlantParameterService'
@@ -31,11 +32,13 @@ export default class RunAutomationCycle extends BaseCommand {
     const plantParameterService = new PlantParameterService()
     const sensorReadingService = new SensorReadingService()
     const fuzzyDecisionService = new FuzzyDecisionService()
+    const actuatorService = new ActuatorService()
 
     const automationService = new AutomationService(
       plantParameterService,
       sensorReadingService,
-      fuzzyDecisionService
+      fuzzyDecisionService,
+      actuatorService
     )
 
     // Jalankan siklus otomasi

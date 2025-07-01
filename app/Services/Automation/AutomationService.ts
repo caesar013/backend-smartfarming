@@ -25,23 +25,24 @@ export default class AutomationService {
     // This complex query prevents multiple database calls inside a loop.
     const allBatchLocations = await BatchLocation.query()
       .whereHas('plantingBatch', (batchQuery) => {
-        // Only get batches that are not yet harvested or deleted
-        batchQuery
-          .where('plant_id', 1)
-          .whereNull('harvest_date')
+        batchQuery.whereNull('harvest_date')
       })
       .preload('plantingBatch', (batchQuery) => {
         batchQuery.preload('plant')
       })
       .preload('bedLocation', (bedQuery) => {
-        // Preload the 'sensors' and actuators array
-        bedQuery.preload('sensors').preload('actuators')
+        bedQuery
+          .preload('sensors', (sensorQuery) => {
+            // Only preload sensors where the related type has a specific code.
+            sensorQuery.whereHas('sensorType', (typeQuery) => {
+              typeQuery.where('type_code', 'NPK') // <-- Find by type, not name!
+            })
+          })
+          .preload('actuators')
       })
 
-    console.log(`Loaded ${allBatchLocations[0]}.`)
-
     console.log(`Found ${allBatchLocations.length} batch locations to process.`)
-// 2. Loop through each one and process it.
+    // 2. Loop through each one and process it.
     for (const batchLocation of allBatchLocations) {
       // We check if all necessary data was loaded before processing.
       if (batchLocation.plantingBatch && batchLocation.bedLocation && batchLocation.bedLocation.sensors && batchLocation.bedLocation.actuators) {
@@ -60,10 +61,10 @@ export default class AutomationService {
   private async processSingleBatchLocation(batchLocation: BatchLocation) {
     const PUMP_LATENCY_SECONDS = 35
     const PUMP_ACTUATOR_SLUG = 'pump'
-    const NUTRIENT_VALVE_SLUG = 'nutrient_valve'
+    const NUTRIENT_VALVE_SLUG = 'nutrient-valve'
 
-    // Find the NPK sensor by its unique public name
-    const npkSensor = batchLocation.bedLocation.sensors.find(sensor => sensor.publicName === 'npk1')
+    // The array should only contain NPK sensors because of our filter.
+    const npkSensor = batchLocation.bedLocation.sensors[0]
 
     // Find the actuator by its slug
     // const valve = batchLocation.bedLocation.actuators.find(actuator => actuator.slug === 'valve1')
