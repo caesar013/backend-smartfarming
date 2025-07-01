@@ -58,7 +58,7 @@ export default class FuzzyDecisionService {
    */
   private fuzzifyEcError(ecError: number) {
     return {
-      Terlalu_Rendah: this.getMembership(ecError, [-500, -500, -300, -100]),
+      Terlalu_Rendah: this.getMembership(ecError, [-1000, -1000, -300, -100]),
       Rendah:         this.getMembership(ecError, [-200, -100, -50, 0]),
       Sesuai:         this.getMembership(ecError, [-50, 0, 50, 100]),
       Tinggi:         this.getMembership(ecError, [50, 150, 300, 500]),
