@@ -23,22 +23,16 @@ export default class CreatePlantGrowthParameterValidator {
     maxAge: schema.number.optional([
       rules.unsigned(),
     ]),
-    minN: schema.number([
+    minSoilEc: schema.number([
       rules.unsigned(),
     ]),
-    maxN: schema.number.optional([
+    maxSoilEc: schema.number.optional([
       rules.unsigned(),
     ]),
-    minP: schema.number([
+    minSoilHumidity: schema.number([
       rules.unsigned(),
     ]),
-    maxP: schema.number.optional([
-      rules.unsigned(),
-    ]),
-    minK: schema.number([
-      rules.unsigned(),
-    ]),
-    maxK: schema.number.optional([
+    maxSoilHumidity: schema.number.optional([
       rules.unsigned(),
     ]),
   })

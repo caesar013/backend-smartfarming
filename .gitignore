@@ -7,3 +7,4 @@ coverage
 tmp
 .seeded_sf_adonis
 pwdfile
+*.log

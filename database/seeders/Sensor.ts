@@ -7,16 +7,19 @@ export default class extends BaseSeeder {
       {
         name: 'dht',
         publicName: 'dht',
+        sensorTypeId: 2,
         bedLocationId: null
       },
       {
         name: 'npk_1',
         publicName: 'npk1',
+        sensorTypeId: 1,
         bedLocationId: 1
       },
       {
         name: 'npk_2',
         publicName: 'npk2',
+        sensorTypeId: 1,
         bedLocationId: 2
       }
     ])

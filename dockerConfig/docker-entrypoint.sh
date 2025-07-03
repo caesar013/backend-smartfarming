@@ -2,6 +2,7 @@
 set -e
 
 VOLUME_MOUNT_PATH="/home/node/app/adonis_state"
+LOG_DIR="/home/node/app/storage/logs"
 
 echo "Entrypoint: Running as user: $(whoami)"
 
@@ -18,8 +19,19 @@ else
     echo "Entrypoint: Created and set ownership for $VOLUME_MOUNT_PATH"
 fi
 
-# ================= PERUBAHAN KUNCI =================
-# "Drop privileges" dan jalankan CMD yang diberikan sebagai user 'node'
-# "$@" adalah semua argumen yang diteruskan ke skrip ini (yaitu CMD dari Dockerfile)
+# Create log directory if it doesn't exist
+mkdir -p "$LOG_DIR"
+# Set ownership of the log directory to 'node'
+chown -R node:node "/home/node/app/storage"
+
+# 1. Apply cron jobs from /etc/cron.d/automation-cron
+crontab /etc/cron.d/automation-cron
+echo "Entrypoint: Cron jobs applied."
+
+# 2. Start the cron service in the background
+echo "Entrypoint: Crond service started in the background."
+crond -f &
+
+# 3. Drop privileges and run the command as the 'node' user
 exec su-exec node "$@"
 # ===================================================

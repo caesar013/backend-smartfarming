@@ -2,6 +2,7 @@ import Database from "@ioc:Adonis/Lucid/Database";
 import BaseRepository from "App/Base/Repositories/BaseRepository";
 import Sensor from "App/Models/Sensor/Sensor";
 import SensorReading from "App/Models/SensorReading/SensorReading";
+import { DateTime } from "luxon";
 
 interface SearchOptions {
   sensors?: string[]
@@ -16,7 +17,42 @@ export default class SensorReadingRepository extends BaseRepository {
     super(SensorReading)
   }
 
-  public async getLatestReadings() {
+  /**
+   * Fetches the latest sensor readings.
+   * @param sensorId (optional) ID of the sensor to filter readings, if provided
+   * @param maxAgeInMinutes (optional) Maximum age of the readings in minutes, if provided
+   * @returns
+   */
+  public async getLatestReadings(sensorId?: number, maxAgeInMinutes?: number) {
+
+    // If sensorId and maxAgeInMinutes are provided, filter readings accordingly
+    if (sensorId && maxAgeInMinutes) {
+      // Set the earliest timestamp to fetch readings from
+      const earliestTimestamp = DateTime.now().minus({ minutes: maxAgeInMinutes }).toUTC()
+
+      // Build the query to fetch readings for a specific sensor within the max age limit
+      const query = `
+        SELECT
+          s.id AS sensor_id,
+          s.public_name AS name,
+          sr.payload,
+          sr.created_at AS timestamp
+        FROM
+          sensors s
+        INNER JOIN
+          sensor_readings sr ON s.id = sr.sensor_id
+        WHERE
+          s.id = ? AND
+          s.deleted_at IS NULL AND
+          sr.created_at >= ?
+        ORDER BY
+          sr.created_at DESC
+        LIMIT 1 -- This ensures we only get the latest reading;
+      `
+      const { rows } = await Database.rawQuery(query, [sensorId, earliestTimestamp.toSQL()])
+      return rows
+    }
+
     const latestReadingQuery = `
       SELECT DISTINCT ON (s.id)
         s.id AS sensor_id,

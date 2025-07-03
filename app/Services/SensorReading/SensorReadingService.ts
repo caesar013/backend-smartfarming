@@ -26,40 +26,6 @@ export default class SensorReadingService extends BaseService {
   }
 
   public async search(filters?: any) {
-    const { isLatest } = filters || {}
-    // if (isLatest) {
-    //   const latestReadings = await this.repository.getLatestReadings()
-
-    //   const formattedReadings = latestReadings.reduce((accumulator, currentReading) => {
-    //     const sensor_name = currentReading.name.replace('_', '').toLowerCase() // Convert to lowercase and remove underscores
-    //     accumulator[sensor_name] = currentReading.payload
-    //     return accumulator
-    //   }, {})
-
-    //   return formattedReadings
-    // }
-
-    // const { startDate, endDate } = this.determineDateRange(filters.range)
-
-    // const searchOptions = {
-    //   sensors: filters?.sensor,
-    //   metrics: filters?.metric,
-    //   // default to HOURLY if not provided
-    //   interval: filters.range?.time_range === 'HOURLY' ? 'hour' : 'day', // Default to HOURLY if not provided
-    //   startDate: startDate.toISO(), // Convert to  ISO date string
-    //   endDate: endDate.toISO(),
-    // }
-
-    // return this.repository.search(searchOptions)
-
-    if (isLatest) {
-      const latestReadings = await this.repository.getLatestReadings()
-
-      return Object.fromEntries(
-        latestReadings.map(reading => [reading.name, reading.payload])
-      )
-    }
-
     const { startDate, endDate } = this.determineDateRange(filters.range)
 
     const searchOptions = {
@@ -190,5 +156,48 @@ export default class SensorReadingService extends BaseService {
 
   private isValidSensorMessage(data: unknown): data is SensorMessage {
     return typeof data === 'object' && data !== null
+  }
+
+  /**
+   * Get the latest sensor readings.
+   * @param sensorId - ID of the sensor to fetch readings for.
+   * @param maxAgeInMinutes - Maximum age of the readings in minutes.
+   * @returns Object containing the latest sensor readings.
+   */
+  public async getLatestReadings(sensorId?: number, maxAgeInMinutes: number = 60) {
+    try {
+
+      // If no sensorId is provided, fetch the latest readings for all sensors
+      if (!sensorId) {
+        const latestReadings = await this.repository.getLatestReadings()
+        if (!latestReadings || latestReadings.length === 0) {
+          return null
+        }
+
+        return Object.fromEntries(
+          latestReadings.map(reading => [
+            reading.name,
+            reading.payload
+          ])
+        )
+      }
+      // Fetch the latest readings from the repository
+      const latestReadings = await this.repository.getLatestReadings(sensorId, maxAgeInMinutes)
+
+      // If no readings are found, return null
+      if (!latestReadings || latestReadings.length === 0) {
+        return null
+      }
+
+      return latestReadings.map(({ payload, ...rest }) => ({
+        ...rest,
+        ...payload
+      }))[0]
+
+
+    } catch (error) {
+      console.error('Error fetching latest sensor readings:', error)
+      return null
+    }
   }
 }

@@ -12,12 +12,10 @@ export default class PlantGrowthParameterController {
     'growthStageId',
     'minAge',
     'maxAge',
-    'minN',
-    'maxN',
-    'minP',
-    'maxP',
-    'minK',
-    'maxK',
+    'minSoilEc',
+    'maxSoilEc',
+    'minSoilHumidity',
+    'maxSoilHumidity',
   ]
 
   public async index({ request, response }: HttpContextContract) {
