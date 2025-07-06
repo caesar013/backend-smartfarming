@@ -18,6 +18,9 @@ export default class ActuatorControlLog extends BaseModel {
   @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
   public createdAt: DateTime
 
+  @column.dateTime({ serializeAs: 'turnOffAt' })
+  public turnOffAt: DateTime | null
+
   static get table() {
     return "public.actuator_control_logs" // table name
   }
