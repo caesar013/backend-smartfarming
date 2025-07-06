@@ -11,6 +11,7 @@ export default class extends BaseSeeder {
         actuatorTypeId: 2,
         bedLocationId: 2,
         relayPin: 97, // will be 14
+        maxDuration: 10 // in minutes
       },
       {
         name: 'Valve 2',
@@ -18,6 +19,7 @@ export default class extends BaseSeeder {
         actuatorTypeId: 2,
         bedLocationId: 3,
         relayPin: 98, // will be 27
+        maxDuration: 10 // in minutes
       },
       {
         name: 'Valve 3',
@@ -25,6 +27,7 @@ export default class extends BaseSeeder {
         actuatorTypeId: 2,
         bedLocationId: 4,
         relayPin: 99, // will be 26
+        maxDuration: 10 // in minutes
       },
       {
         name: 'Pump',
@@ -32,6 +35,7 @@ export default class extends BaseSeeder {
         actuatorTypeId: 1,
         bedLocationId: null,
         relayPin: 25,
+        maxDuration: 10 // in minutes
       },
       {
         name: 'Water Valve',
@@ -39,6 +43,7 @@ export default class extends BaseSeeder {
         actuatorTypeId: 2,
         bedLocationId: null,
         relayPin: 33,
+        maxDuration: 10 // in minutes
       },
       {
         name: 'Nutrient Valve',
@@ -46,6 +51,7 @@ export default class extends BaseSeeder {
         actuatorTypeId: 2,
         bedLocationId: null,
         relayPin: 32,
+        maxDuration: 10 // in minutes
       }
     ])
   }
