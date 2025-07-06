@@ -112,8 +112,8 @@ export default class AutomationService {
       console.log(`[AKTUATOR] Starting watering cycle for '${PUMP_ACTUATOR_SLUG}'...`)
 
       // Turn ON the pump with retry logic
-      await this.sendCommandWithRetry(NUTRIENT_VALVE_SLUG, 'ON')
-      const pumpTurnOnSuccess = await this.sendCommandWithRetry(PUMP_ACTUATOR_SLUG, 'ON')
+      await this.actuatorService.sendCommandWithRetry(NUTRIENT_VALVE_SLUG, 'ON')
+      const pumpTurnOnSuccess = await this.actuatorService.sendCommandWithRetry(PUMP_ACTUATOR_SLUG, 'ON')
 
       // Only proceed if turning ON was successful
       if (pumpTurnOnSuccess) {
@@ -123,8 +123,8 @@ export default class AutomationService {
 
         // Turn OFF the pump with retry logic
         console.log(`[AKTUATOR] Time is up. Turning OFF pump '${PUMP_ACTUATOR_SLUG}'...`)
-        await this.sendCommandWithRetry(PUMP_ACTUATOR_SLUG, 'OFF')
-        await this.sendCommandWithRetry(NUTRIENT_VALVE_SLUG, 'OFF')
+        await this.actuatorService.sendCommandWithRetry(PUMP_ACTUATOR_SLUG, 'OFF')
+        await this.actuatorService.sendCommandWithRetry(NUTRIENT_VALVE_SLUG, 'OFF')
       } else {
         console.error(`[AKTUATOR] Failed to turn on pump '${PUMP_ACTUATOR_SLUG}'. Aborting watering cycle.`)
       }
@@ -135,28 +135,4 @@ export default class AutomationService {
     console.log(`--- Cycle for Plot: ${plotName} finished ---`)
   }
 
-  /**
-   * Helper method to send a command with retry logic.
-   * @param slug - The actuator's slug.
-   * @param action - The action to perform ('ON' or 'OFF').
-   * @param maxRetries - The maximum number of times to retry.
-   * @returns True if successful, false otherwise.
-   */
-  private async sendCommandWithRetry(slug: string, action: 'ON' | 'OFF', maxRetries: number = 3): Promise<boolean> {
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        await this.actuatorService.controlActuator(slug, { action }, 'System')
-        console.log(`[ACTUATOR] Attempt ${attempt}: Command '${action}' for '${slug}' successful.`)
-        return true // Command succeeded, exit the loop.
-      } catch (error) {
-        console.error(`[AKTUATOR] Attempt ${attempt} failed for action '${action}' on '${slug}':`, error.message)
-        if (attempt < maxRetries) {
-          console.log(`[AKTUATOR] Retrying in 5 seconds...`)
-          await new Promise(resolve => setTimeout(resolve, 5000)) // Wait 5 seconds before retrying.
-        }
-      }
-    }
-    console.error(`[AKTUATOR] All ${maxRetries} attempts failed for action '${action}' on '${slug}'. Giving up.`)
-    return false // All retries failed.
-  }
 }
