@@ -7,7 +7,7 @@ export default class extends BaseSchema {
     // add index to the 'actuators' table
     this.schema.table(this.tableName, (table) => {
       // this column is used to store maximum duration in minutes
-      table.integer('max_duration').nullable().defaultTo(15).after('slug')
+      table.smallint('max_duration').nullable().defaultTo(15).after('slug')
     })
   }
 
