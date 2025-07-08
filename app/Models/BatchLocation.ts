@@ -1,8 +1,8 @@
 import { DateTime } from 'luxon'
-import { BaseModel, BelongsTo, belongsTo, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
 import PlantingBatch from './PlantingBatch/PlantingBatch'
 import BedLocation from './BedLocation/BedLocation'
-import AutomationIrrigationLog from './Automation/AutomationIrrigationLog'
+
 export default class BatchLocation extends BaseModel {
   @column({ isPrimary: true })
   public id: number
@@ -29,7 +29,4 @@ export default class BatchLocation extends BaseModel {
 
   @belongsTo(() => BedLocation)
   public bedLocation: BelongsTo<typeof BedLocation>
-
-  @hasMany(() => AutomationIrrigationLog)
-  public automationLogs: HasMany<typeof AutomationIrrigationLog>
 }
