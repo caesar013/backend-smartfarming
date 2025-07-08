@@ -207,16 +207,16 @@ export default class AutomationService {
 
     if (totalPumpDuration > 0) {
       Logger.info(`[AKTUATOR] Starting irrigation cycle for '${this.PUMP_ACTUATOR_SLUG}', '${this.WATER_VALVE_SLUG}'`);
-      await this.sendCommandWithRetry(this.WATER_VALVE_SLUG, 'ON');
-      const pumpTurnOnSuccess = await this.sendCommandWithRetry(this.PUMP_ACTUATOR_SLUG, 'ON');
+      await this.actuatorService.sendCommandWithRetry(this.WATER_VALVE_SLUG, 'ON');
+      const pumpTurnOnSuccess = await this.actuatorService.sendCommandWithRetry(this.PUMP_ACTUATOR_SLUG, 'ON');
 
       if (pumpTurnOnSuccess) {
         Logger.info(`[AKTUATOR] Pump and Valve is ON. Waiting for ${totalPumpDuration} seconds...`);
         await new Promise(resolve => setTimeout(resolve, totalPumpDuration * 1000));
 
         Logger.info(`[AKTUATOR] Time is up. Turning OFF pump and valve.`);
-        await this.sendCommandWithRetry(this.PUMP_ACTUATOR_SLUG, 'OFF');
-        await this.sendCommandWithRetry(this.WATER_VALVE_SLUG, 'OFF');
+        await this.actuatorService.sendCommandWithRetry(this.PUMP_ACTUATOR_SLUG, 'OFF');
+        await this.actuatorService.sendCommandWithRetry(this.WATER_VALVE_SLUG, 'OFF');
       } else {
         Logger.error(`[AKTUATOR] Failed to turn on pump and valve. Aborting irrigation cycle for plot ${plotName}.`);
       }
@@ -282,9 +282,8 @@ export default class AutomationService {
       console.log(`[AKTUATOR] Starting watering cycle for '${this.PUMP_ACTUATOR_SLUG}'...`)
 
       // Turn ON the pump with retry logic
- nutrition-automation
-      await this.actuatorService.sendCommandWithRetry(NUTRIENT_VALVE_SLUG, 'ON')
-      const pumpTurnOnSuccess = await this.actuatorService.sendCommandWithRetry(PUMP_ACTUATOR_SLUG, 'ON')
+      await this.actuatorService.sendCommandWithRetry(this.NUTRIENT_VALVE_SLUG, 'ON')
+      const pumpTurnOnSuccess = await this.actuatorService.sendCommandWithRetry(this.PUMP_ACTUATOR_SLUG, 'ON')
 
 
       // Only proceed if turning ON was successful
@@ -294,10 +293,9 @@ export default class AutomationService {
         await new Promise(resolve => setTimeout(resolve, totalPumpDuration * 1000))
 
         // Turn OFF the pump with retry logic
- nutrition-automation
-        console.log(`[AKTUATOR] Time is up. Turning OFF pump '${PUMP_ACTUATOR_SLUG}'...`)
-        await this.actuatorService.sendCommandWithRetry(PUMP_ACTUATOR_SLUG, 'OFF')
-        await this.actuatorService.sendCommandWithRetry(NUTRIENT_VALVE_SLUG, 'OFF')
+        console.log(`[AKTUATOR] Time is up. Turning OFF pump '${this.PUMP_ACTUATOR_SLUG}'...`)
+        await this.actuatorService.sendCommandWithRetry(this.PUMP_ACTUATOR_SLUG, 'OFF')
+        await this.actuatorService.sendCommandWithRetry(this.NUTRIENT_VALVE_SLUG, 'OFF')
 
       } else {
         console.error(`[AKTUATOR] Failed to turn on pump '${this.PUMP_ACTUATOR_SLUG}'. Aborting watering cycle.`)
