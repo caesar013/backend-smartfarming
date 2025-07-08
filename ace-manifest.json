@@ -1,5 +1,17 @@
 {
   "commands": {
+    "actuator:check": {
+      "settings": {
+        "loadApp": true,
+        "stayAlive": false
+      },
+      "commandPath": "./commands/ActuatorCheck",
+      "commandName": "actuator:check",
+      "description": "Checks for actuators past their turn-off time and deactivates them",
+      "args": [],
+      "aliases": [],
+      "flags": []
+    },
     "make:module": {
       "settings": {
         "loadApp": false,

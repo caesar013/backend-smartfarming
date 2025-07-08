@@ -12,6 +12,8 @@ export default class extends BaseSchema {
 
       table.string('name', 255).notNullable()
       table.string('slug').unique().notNullable()
+      // This is the pin number for the relay controlling the actuator
+      // This will need refactoring in the future to support multiple relays
       table.integer('relay_pin').notNullable().unsigned().unique()
 
       /**

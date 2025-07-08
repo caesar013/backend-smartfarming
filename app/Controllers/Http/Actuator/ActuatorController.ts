@@ -152,7 +152,7 @@ export default class ActuatorController {
       const username = auth.user ? `User: ${auth.user.username}` : 'System'
 
       // Call the service to handle the logic
-      const log = await this.service.controlActuator(slug, payload, username)
+      const log = await this.service.controlActuator(slug, payload, { triggeredBy: username })
 
       return response.ok({
         message: 'Command sent successfully to the actuator.',

@@ -75,4 +75,13 @@ export default class ActuatorRepository extends BaseRepository {
     // .rows will contain the clean array of objects
     return result.rows
   }
+
+  /**
+   * Finds actuator by their ID.
+   * @param id The ID of the actuator.
+   * @returns The Actuator model instance or null.
+   */
+  public async findById(id: number): Promise<Actuator | null> {
+    return await Actuator.find(id)
+  }
 }

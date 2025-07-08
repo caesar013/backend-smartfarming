@@ -24,6 +24,9 @@ export default class Actuator extends BaseModel {
   @column()
   public slug: string
 
+  @column({ serializeAs: 'maxDuration' })
+  public maxDuration: number | null
+
   @column({ serializeAs: 'relayPin' })
   public relayPin: number
 
