@@ -21,6 +21,8 @@
 import Route from '@ioc:Adonis/Core/Route'
 import fs from 'fs';
 import 'App/Services/Mqtt/MqttService' // Ensure MQTT service is initialized
+import BatchLocation from 'App/Models/BatchLocation';
+import SensorReadingService from 'App/Services/SensorReading/SensorReadingService';
 
 Route.group(function () {
   if (fs.existsSync(`${__dirname}/routes`)) {
@@ -54,7 +56,37 @@ Route.get('/', async ({ view }) => {
 })
 
 Route.get('/api', async () => {
-  return 'Hello World!';
+  const allBatchLocations = await BatchLocation.query()
+    .whereHas('plantingBatch', (batchQuery) => {
+      batchQuery.whereNull('harvest_date')
+        .whereHas('plant', ($eqiLoveNisa) => {
+          $eqiLoveNisa.where('name', 'Stroberi')
+        })
+    })
+    .whereHas('bedLocation', ($nisaLoveEqi) => {
+      $nisaLoveEqi.where('id', 2) // this will only get group bed 2 as intended in the thesis
+    })
+    .preload('bedLocation', (bedQuery) => {
+      bedQuery
+        .preload('sensors', (sensorQuery) => {
+          sensorQuery.whereHas('sensorType', (typeQuery) => {
+            typeQuery.where('type_code', 'NPK')
+          }).preload('sensorType')
+        })
+    })
+  const sensors = allBatchLocations[0].bedLocation.sensors
+
+  // 3. Find the sensor with the CORRECT comparison operator
+  const npkSensor = sensors.find(sensor => sensor.sensorType.typeCode === 'NPK')
+
+  // 4. Check if the NPK sensor was actually found
+  if (!npkSensor) {
+    console.log('NPK sensor not found for this location.')
+    return [] // Return empty array
+  }
+  const sss = new SensorReadingService()
+  const actualReadings = await sss.getLatestReadings(npkSensor.id)
+  return actualReadings
 })
 
 Route.on('*').render('index')

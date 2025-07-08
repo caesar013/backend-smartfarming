@@ -71,6 +71,17 @@
       "aliases": [],
       "flags": []
     },
+    "automation:run-irrigation": {
+      "settings": {
+        "loadApp": true
+      },
+      "commandPath": "./commands/RunIrrigationCycle",
+      "commandName": "automation:run-irrigation",
+      "description": "Menjalankan satu siklus otomasi untuk IRIGASI.",
+      "args": [],
+      "aliases": [],
+      "flags": []
+    },
     "dump:rcfile": {
       "settings": {},
       "commandPath": "@adonisjs/core/build/commands/DumpRc",
