@@ -4,6 +4,7 @@ import Role from './Role'
 
 export default class Account extends BaseModel {
   public static softDelete = true
+  public static routeLookupKey = 'username'
 
   @column({ isPrimary: true })
   public id: string
