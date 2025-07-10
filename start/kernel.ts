@@ -43,5 +43,6 @@ Server.middleware.register([
 Server.middleware.registerNamed({
   auth: () => import('App/Middleware/Authenticate'),
   role: () => import('App/Middleware/Role'),
+  admin: () => import('App/Middleware/AdminAuth'),
   normalizeQueryFilter: () => import('App/Middleware/NormalizeQueryFilter'),
 })
