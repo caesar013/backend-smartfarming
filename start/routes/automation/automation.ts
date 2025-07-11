@@ -1,5 +1,4 @@
 import Route from '@ioc:Adonis/Core/Route'
-import AutomationLog from 'App/Models/Automation/AutomationLog'
 
 /**
  * Rute untuk fitur Otomatisasi
