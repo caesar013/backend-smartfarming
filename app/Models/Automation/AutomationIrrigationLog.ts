@@ -11,8 +11,8 @@ export default class AutomationIrrigationLog extends BaseModel {
   public id: number
 
   // untuk memastikan mapping yang benar antara model (camelCase) dan database (snake_case).
-  @column({ columnName: 'dht_temperature_input' })
-  public dhtTemperatureInput: number | null
+  @column({ columnName: 'npk_temperature_input' })
+  public npkTemperatureInput: number | null
 
   @column({ columnName: 'npk_humidity_input' })
   public npkHumidityInput: number | null

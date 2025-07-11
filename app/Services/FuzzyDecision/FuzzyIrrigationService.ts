@@ -4,7 +4,7 @@ import Logger from '@ioc:Adonis/Core/Logger'
 import { irrigationFuzzyConfig } from 'Config/fuzzyIrrigation'
 
 interface IrrigationFuzzyInputs {
-    suhuUdara: number
+    suhuTanah: number
     kelembapanTanah: number
 }
 
@@ -92,7 +92,7 @@ export default class FuzzyIrrigationService {
 
     // METODE UTAMA 
     public calculateIrrigationDuration(inputs: IrrigationFuzzyInputs): number {
-        Logger.info(`[FUZZY_IRRIGATION] Inputs: Suhu=${inputs.suhuUdara}, Kelembapan=${inputs.kelembapanTanah}`);
+        Logger.info(`[FUZZY_IRRIGATION] Inputs: Suhu Tanah=${inputs.suhuTanah}, Kelembapan=${inputs.kelembapanTanah}`);
 
         // Langkah 1: Fuzzifikasi (memanggil metode dinamis yang baru)
         const fuzzifiedInputs = this.fuzzifyInputs(inputs);

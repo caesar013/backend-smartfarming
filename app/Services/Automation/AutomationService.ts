@@ -9,11 +9,7 @@ import FuzzyIrrigationService from "App/Services/FuzzyDecision/FuzzyIrrigationSe
 import AutomationIrrigationStatus from "App/Models/Automation/AutomationIrrigationStatus"
 import AutomationIrrigationLog from "App/Models/Automation/AutomationIrrigationLog"
 
-interface dhtContract {
-  viciHumidity: number
-  viciLuminosity: number
-  viciTemperature: number
-}
+
 export default class AutomationService {
   private static isRunningIrrigation: boolean = false
   // Initialize required services
@@ -114,8 +110,6 @@ export default class AutomationService {
               }).preload('sensorType')
             })
         })
-      // this line will only get dht data ONLY, will need future improvements
-      const dhtReadings = (await this.sensorReadingService.getLatestReadings())['dht']
 
       Logger.info(`Found ${allBatchLocations.length} active batch locations for irrigation.`)
 
@@ -129,7 +123,7 @@ export default class AutomationService {
         // =========================================================================================
 
         if (batchLocation.bedLocation && sensorCount >= 1) {
-          await this.processSingleLocationForIrrigation(batchLocation, dhtReadings)
+          await this.processSingleLocationForIrrigation(batchLocation)
         } else {
           Logger.warn(`Skipping irrigation for location ${locationName} due to incomplete data (sensors or actuators).`)
         }
@@ -148,21 +142,21 @@ export default class AutomationService {
      * Memproses logika irigasi untuk satu BatchLocation,
      * dari membaca sensor hingga menyimpan log.
      */
-  private async processSingleLocationForIrrigation(batchLocation: BatchLocation, dhtReadings: dhtContract) {
+  private async processSingleLocationForIrrigation(batchLocation: BatchLocation,) {
     const plotName = batchLocation.bedLocation.name;
     Logger.info(`\n--- [IRRIGATION] Processing Plot: ${plotName} ---`);
 
     // --- 1. Ambil Data Sensor ---
     const npkSensor = batchLocation.bedLocation.sensors.find(s => s.sensorType.typeCode === 'NPK');
-    let suhuUdara: number | undefined;
+    let suhuTanah: number | undefined;
     let kelembapanTanah: number | undefined;
 
     try {
       const npkLatestReadingsResponse = await this.sensorReadingService.getLatestReadings(npkSensor?.id, 60);
       if (npkSensor) {
-        suhuUdara = dhtReadings.viciTemperature;
+        suhuTanah = npkLatestReadingsResponse.soilTemperature;
         kelembapanTanah = npkLatestReadingsResponse.soilHumidity;
-        Logger.info(`[IRRIGATION] Reading from sensor '${npkSensor.name}', Humidity: ${kelembapanTanah}. DHT sensor, Temp: ${suhuUdara},`);
+        Logger.info(`[IRRIGATION] Reading from sensor '${npkSensor.name}', Humidity: ${kelembapanTanah}, Soil Temperature: ${suhuTanah},`);
       }
     } catch (error) {
       Logger.error(`[IRRIGATION] Failed to get or parse sensor readings for plot ${plotName}. Error: ${error.message}`);
@@ -170,14 +164,14 @@ export default class AutomationService {
     }
 
     // --- 2. Validasi Data Sensor ---
-    if (suhuUdara === undefined || kelembapanTanah === undefined) {
+    if (suhuTanah === undefined || kelembapanTanah === undefined) {
       Logger.warn(`[IRRIGATION] Critical sensor data (temp/humidity) is null or missing for plot ${plotName}. Skipping.`);
       return;
     }
 
     // --- 3. Hitung Keputusan menggunakan Fuzzy Logic ---
     const effectiveDuration = this.fuzzyIrrigationService.calculateIrrigationDuration({
-      suhuUdara: suhuUdara,
+      suhuTanah: suhuTanah,
       kelembapanTanah: kelembapanTanah,
     });
 
@@ -185,7 +179,7 @@ export default class AutomationService {
     try {
       await AutomationIrrigationLog.create({
         batchLocationId: batchLocation.id,
-        dhtTemperatureInput: suhuUdara,
+        npkTemperatureInput: suhuTanah,
         npkHumidityInput: kelembapanTanah,
         state: effectiveDuration > 0 ? 'Menyiram' : 'Tidak Menyiram',
         duration: Math.round(effectiveDuration),

@@ -11,7 +11,7 @@ export default class extends BaseSchema {
       // Foreign key dari table batch_location
       table.integer('batch_location_id').unsigned().references('id').inTable('batch_locations').onDelete('SET NULL')
       // untuk menerima nilai desimal dari sensor.
-      table.float('dht_temperature_input').nullable()
+      table.float('npk_temperature_input').nullable()
       table.float('npk_humidity_input').nullable()
       table.string('state').notNullable() // Keputusan dari model ML
       table.integer('duration').unsigned().notNullable().defaultTo(0) // Durasi dalam detik
