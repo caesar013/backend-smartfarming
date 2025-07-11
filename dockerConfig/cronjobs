@@ -2,6 +2,6 @@
 * * * * * su -s /bin/sh node -c "cd /home/node/app && node ace actuator:check >> /home/node/app/storage/logs/cron.log 2>&1"
 
 # TAMBAHAN: Menjalankan otomasi IRIGASI setiap jam (milik Anda)
-0 * * * * su -s /bin/sh node -c "cd /home/node/app && node ace automation:run-irrigation >> /home/node/app/storage/logs/cron.log 2>&1"
+*/5 * * * * su -s /bin/sh node -c "cd /home/node/app && node ace automation:run-irrigation >> /home/node/app/storage/logs/cron.log 2>&1"
 
 # Baris kosong di akhir file adalah praktik yang baik untuk cron
