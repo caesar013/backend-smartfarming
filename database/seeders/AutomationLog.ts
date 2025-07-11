@@ -1,7 +1,7 @@
 // database/seeders/AutomationLogSeeder.ts
 
 import BaseSeeder from '@ioc:Adonis/Lucid/Seeder'
-import AutomationIrrigationLog from 'App/Models/Automation/AutomationIrrigationLog'
+import AutomationIrrigationLog from 'App/Models/Automation/AutomationLog'
 import { DateTime } from 'luxon'
 
 export default class extends BaseSeeder {
@@ -14,8 +14,11 @@ export default class extends BaseSeeder {
       // Log untuk HARI INI
       {
         batchLocationId: 1, // Pastikan ID ini ada di tabel batch_locations
-        dhtTemperatureInput: 28.5,
-        npkHumidityInput: 45.2,
+        automationStatusId: 1,
+        payloadInput: {
+          dhtTemperatureInput: 30.5,
+          npkHumidityInput: 55.2,
+        },
         state: 'Menyiram',
         duration: 240,
         executedAt: DateTime.now(),
@@ -23,8 +26,11 @@ export default class extends BaseSeeder {
       // Log untuk KEMARIN
       {
         batchLocationId: 1,
-        dhtTemperatureInput: 27.1,
-        npkHumidityInput: 65.8,
+        automationStatusId: 1,
+        payloadInput: {
+          dhtTemperatureInput: 27.1,
+          npkHumidityInput: 65.8,
+        },
         state: 'Tidak Menyiram',
         duration: 0,
         executedAt: DateTime.now().minus({ days: 1 }),
@@ -32,8 +38,11 @@ export default class extends BaseSeeder {
       // Log untuk 2 HARI YANG LALU
       {
         batchLocationId: 1,
-        dhtTemperatureInput: 29.8,
-        npkHumidityInput: 41.0,
+        automationStatusId: 1,
+        payloadInput: {
+          dhtTemperatureInput: 29.8,
+          npkHumidityInput: 41.0,
+        },
         state: 'Menyiram',
         duration: 280,
         executedAt: DateTime.now().minus({ days: 2 }),

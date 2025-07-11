@@ -1,21 +1,26 @@
-
-// app/Models/Automation/AutomationLog.ts
 import { DateTime } from 'luxon'
 import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
 import BatchLocation from 'App/Models/BatchLocation'
+import AutomationStatus from './AutomationStatus'
 
-export default class AutomationIrrigationLog extends BaseModel {
+export default class AutomationLog extends BaseModel {
   public static table = 'automation_logs'
 
   @column({ isPrimary: true })
   public id: number
 
   // untuk memastikan mapping yang benar antara model (camelCase) dan database (snake_case).
-  @column({ columnName: 'dht_temperature_input' })
-  public dhtTemperatureInput: number | null
+  @column({ serializeAs: 'bathchLocationId' })
+  public batchLocationId: number
 
-  @column({ columnName: 'npk_humidity_input' })
-  public npkHumidityInput: number | null
+  @column({ serializeAs: 'automationStatusId' })
+  public automationStatusId: number
+
+  @column({
+    prepare: (value: object) => JSON.stringify(value), // Convert object to JSON string for storage
+    serializeAs: 'payloadInput',
+  })
+  public payloadInput: object // JSONB type, stored as a string in JS
 
   @column()
   public state: string
@@ -33,10 +38,9 @@ export default class AutomationIrrigationLog extends BaseModel {
   })
   public executedAt: DateTime
 
-  // Foreign key
-  @column({ columnName: 'batch_location_id' })
-  public batchLocationId: number
-
   @belongsTo(() => BatchLocation)
   public batchLocation: BelongsTo<typeof BatchLocation>
+
+  @belongsTo(() => AutomationStatus)
+  public automationStatus: BelongsTo<typeof AutomationStatus>
 }
