@@ -6,8 +6,8 @@ import BatchLocation from "App/Models/BatchLocation"
 import { DateTime } from "luxon"
 import Logger from '@ioc:Adonis/Core/Logger'
 import FuzzyIrrigationService from "App/Services/FuzzyDecision/FuzzyIrrigationService"
-import AutomationIrrigationStatus from "App/Models/Automation/AutomationIrrigationStatus"
-import AutomationIrrigationLog from "App/Models/Automation/AutomationIrrigationLog"
+import AutomationStatus from "App/Models/Automation/AutomationStatus"
+import AutomationLog from "App/Models/Automation/AutomationLog"
 
 interface dhtContract {
   viciHumidity: number
@@ -75,7 +75,7 @@ export default class AutomationService {
     */
   public async automateIrrigation() {
     // Mengambil status irrigasi
-    const statusRecord = await AutomationIrrigationStatus.firstOrCreate({}, { isActive: false })
+    const statusRecord = await AutomationStatus.firstOrCreate({}, { isActive: false })
     const isIrrigationEnabled = statusRecord.isActive
 
     // Pengecekan apakah fitur irigasi menyala
@@ -183,7 +183,7 @@ export default class AutomationService {
 
     // --- 4. Simpan Log Keputusan ke Database ---
     try {
-      await AutomationIrrigationLog.create({
+      await AutomationLog.create({
         batchLocationId: batchLocation.id,
         dhtTemperatureInput: suhuUdara,
         npkHumidityInput: kelembapanTanah,

@@ -1,4 +1,5 @@
 import Route from '@ioc:Adonis/Core/Route'
+import AutomationLog from 'App/Models/Automation/AutomationLog'
 
 /**
  * Rute untuk fitur Otomatisasi
@@ -10,6 +11,6 @@ Route.group(() => {
   Route.patch('/:system/status', 'Automation/AutomationStatusController.setStatus')
 
   // --- Route untuk Riwayat Log ---
-  Route.get('/logs', 'Automation/AutomationLogsController.index')
+  Route.get('/:system/logs', 'Automation/AutomationLogController.index')
 })
   .prefix('/automation')
