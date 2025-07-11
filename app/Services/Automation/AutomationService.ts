@@ -6,12 +6,20 @@ import BatchLocation from "App/Models/BatchLocation"
 import { DateTime } from "luxon"
 import Logger from '@ioc:Adonis/Core/Logger'
 import FuzzyIrrigationService from "App/Services/FuzzyDecision/FuzzyIrrigationService"
-import AutomationStatus from "App/Models/Automation/AutomationStatus"
 import AutomationLog from "App/Models/Automation/AutomationLog"
+import AutomationStatusService from "../AutomationStatus/AutomationStatusService"
 
 
 export default class AutomationService {
+  // Flag to indicate if the irrigation automation feature is enabled.
+  private static isIrrigationEnabled: boolean = false
+  // Flag to prevent concurrent execution of the automation task.
   private static isRunningIrrigation: boolean = false
+  // Flag to indicate if the nutrition automation feature is enabled.
+  private static isNutritionEnabled: boolean = false
+  // Flag to prevent concurrent execution of the nutrition automation task.
+  private static isRunningNutrition: boolean = false
+  private automationStatusService: AutomationStatusService
   // Initialize required services
   constructor(
     private plantParameterService: PlantParameterService,
@@ -19,7 +27,9 @@ export default class AutomationService {
     private fuzzyDecisionService: FuzzyDecisionService, // for nutrition
     private fuzzyIrrigationService: FuzzyIrrigationService, // for irrigation
     private actuatorService: ActuatorService
-  ) { }
+  ) {
+    this.automationStatusService = new AutomationStatusService()
+  }
 
   PUMP_LATENCY_SECONDS = 15
   PUMP_ACTUATOR_SLUG = 'pump'
@@ -30,63 +40,77 @@ export default class AutomationService {
    * @returns {Promise<void>}
    */
   public async automate() {
-    console.log('--- GLOBAL AUTOMATION CYCLE BEGINS ---')
+    // Get the status of the nutrition automation feature
+    const statusRecord = await this.automationStatusService.getStatus('NUTRITION') // <-- Use the service to get the status
+    const isNutritionEnabled = statusRecord.isActive
 
-    // 1. Get all batch locations and preload the data we need.
-    // This complex query prevents multiple database calls inside a loop.
-    const allBatchLocations = await BatchLocation.query()
-      .whereHas('plantingBatch', (batchQuery) => {
-        batchQuery.whereNull('harvest_date')
-      })
-      .preload('plantingBatch', (batchQuery) => {
-        batchQuery.preload('plant')
-      })
-      .preload('bedLocation', (bedQuery) => {
-        bedQuery
-          .preload('sensors', (sensorQuery) => {
-            // Only preload sensors where the related type has a specific code.
-            sensorQuery.whereHas('sensorType', (typeQuery) => {
-              typeQuery.where('type_code', 'NPK') // <-- Find by type, not name!
-            })
-          })
-          .preload('actuators')
-      })
-
-    console.log(`Found ${allBatchLocations.length} batch locations to process.`)
-    // 2. Loop through each one and process it.
-    for (const batchLocation of allBatchLocations) {
-      // We check if all necessary data was loaded before processing.
-      if (batchLocation.plantingBatch && batchLocation.bedLocation && batchLocation.bedLocation.sensors && batchLocation.bedLocation.actuators) {
-        await this.processSingleBatchLocation(batchLocation)
-      } else {
-        console.warn(`Skipping a batch location due to incomplete data.`)
-      }
+    // Check if the nutrition automation feature is enabled
+    if (!isNutritionEnabled) {
+      Logger.info('[NUTRITION_AUTOMATION] Nutrition automation feature is OFF. Stopping process.')
+      return
     }
+    try {
 
-    console.log('--- GLOBAL AUTOMATION CYCLE ENDED ---')
+      console.log('--- GLOBAL NUTRITION AUTOMATION CYCLE BEGINS ---')
+
+      // 1. Get all batch locations and preload the data we need.
+      // This complex query prevents multiple database calls inside a loop.
+      const allBatchLocations = await BatchLocation.query()
+        .whereHas('plantingBatch', (batchQuery) => {
+          batchQuery.whereNull('harvest_date')
+        })
+        .preload('plantingBatch', (batchQuery) => {
+          batchQuery.preload('plant')
+        })
+        .preload('bedLocation', (bedQuery) => {
+          bedQuery
+            .preload('sensors', (sensorQuery) => {
+              // Only preload sensors where the related type has a specific code.
+              sensorQuery.whereHas('sensorType', (typeQuery) => {
+                typeQuery.where('type_code', 'NPK') // <-- Find by type, not name!
+              })
+            })
+            .preload('actuators')
+        })
+
+      console.log(`Found ${allBatchLocations.length} batch locations to process.`)
+      // 2. Loop through each one and process it.
+      for (const batchLocation of allBatchLocations) {
+        // We check if all necessary data was loaded before processing.
+        if (batchLocation.plantingBatch && batchLocation.bedLocation && batchLocation.bedLocation.sensors && batchLocation.bedLocation.actuators) {
+          await this.processSingleBatchLocation(batchLocation)
+        } else {
+          console.warn(`Skipping a batch location due to incomplete data.`)
+        }
+      }
+
+      console.log('--- GLOBAL NUTRITION AUTOMATION CYCLE ENDED ---')
+    } catch (error) {
+      // Log the error with a more descriptive message
+      Logger.error(`An error occurred during the automation cycle: ${error.message}`)
+    } finally {
+      // Reset the running flags to allow future executions
+      AutomationService.isRunningNutrition = false
+    }
   }
   /**
     * Fungsi otomasi utama untuk IRIGASI.
     * DIUBAH untuk mencari sensor yang benar dan menggunakan syarat yang benar.
     */
   public async automateIrrigation() {
-    // Mengambil status irrigasi
-    const statusRecord = await AutomationStatus.firstOrCreate({}, { isActive: false })
-    const isIrrigationEnabled = statusRecord.isActive
-
     // Pengecekan apakah fitur irigasi menyala
-    if (!isIrrigationEnabled) {
+    if (!AutomationService.isIrrigationEnabled) {
       Logger.info('[IRRIGATION_AUTOMATION] Irrigation automation feature is OFF. Stopping process.')
-      return
+      return // Feature is off, do nothing.
     }
 
-    // Pengecekan apakah automasi sedang dijalankan saat ini
     if (AutomationService.isRunningIrrigation) {
-      Logger.info('[IRRIGATION_AUTOMATION] Irrigation automation is in process. Stopping process.')
-      return
+      Logger.warn('[IRRIGATION_AUTOMATION] Another irrigation cycle is already running. Skipping this cycle.')
+      return // Prevent concurrent execution
     }
+
     try {
-      AutomationService.isRunningIrrigation = true
+      AutomationService.isRunningIrrigation = true // Set the flag to prevent concurrent execution
       Logger.info('--- GLOBAL IRRIGATION AUTOMATION CYCLE BEGINS ---')
       const allBatchLocations = await BatchLocation.query()
         .whereHas('plantingBatch', (batchQuery) => {
@@ -179,8 +203,11 @@ export default class AutomationService {
     try {
       await AutomationLog.create({
         batchLocationId: batchLocation.id,
-        npkTemperatureInput: suhuTanah,
-        npkHumidityInput: kelembapanTanah,
+        automationStatusId: 1,
+        payloadInput: {
+          npkTemperatureInput: suhuTanah,
+          npkHumidityInput: kelembapanTanah,
+        },
         state: effectiveDuration > 0 ? 'Menyiram' : 'Tidak Menyiram',
         duration: Math.round(effectiveDuration),
       });
@@ -301,4 +328,52 @@ export default class AutomationService {
     console.log(`--- Cycle for Plot: ${plotName} finished ---`)
   }
 
+  /**
+   * Initializes the service's state from the database.
+   * This should be called only once when the application boots up.
+   * @param statusService An instance of the AutomationStatusService.
+   */
+  public static async initializeState(statusService: AutomationStatusService) {
+    try {
+      Logger.info('[AUTOMATION_SERVICE] Initializing irrigation state from database...')
+      // Fetch the status record for irrigation
+      const statusRecord = await statusService.getStatus('IRRIGATION')
+      this.isIrrigationEnabled = statusRecord.isActive
+
+      // Fetch the status record for nutrition
+      const nutritionStatusRecord = await statusService.getStatus('NUTRITION')
+      this.isNutritionEnabled = nutritionStatusRecord.isActive
+
+      // Log the initialized state
+      Logger.info(`[AUTOMATION_SERVICE] Irrigation state initialized to: ${this.isIrrigationEnabled}`)
+      Logger.info(`[AUTOMATION_SERVICE] Nutrition state initialized to: ${this.isNutritionEnabled}`)
+    } catch (error) {
+      Logger.error('Failed to initialize irrigation state from database: %j', error)
+      // Set a safe default (false) if initialization fails.
+      this.isIrrigationEnabled = false
+      this.isNutritionEnabled = false
+    }
+  }
+
+  /**
+   * Updates the cached state when it's changed elsewhere (e.g., via an API call).
+   * This keeps the cache in sync with the database without a server restart.
+   * @param system The name of the system being updated (e.g., 'IRRIGATION').
+   * @param isEnabled The new state.
+   */
+  public static updateCachedState(system: string, isEnabled: boolean) {
+    if (system.toUpperCase() === 'IRRIGATION') {
+      if (this.isIrrigationEnabled !== isEnabled) {
+        Logger.info(`[AUTOMATION_SERVICE] Updating cached irrigation state to: ${isEnabled}`)
+        this.isIrrigationEnabled = isEnabled
+      }
+    } else if (system.toUpperCase() === 'NUTRITION') {
+      if (this.isNutritionEnabled !== isEnabled) {
+        Logger.info(`[AUTOMATION_SERVICE] Updating cached nutrition state to: ${isEnabled}`)
+        this.isNutritionEnabled = isEnabled
+      }
+    } else {
+      Logger.warn(`[AUTOMATION_SERVICE] Unknown system: ${system}. No state updated.`)
+    }
+  }
 }

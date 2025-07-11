@@ -16,8 +16,8 @@ export default class extends BaseSeeder {
         batchLocationId: 1, // Pastikan ID ini ada di tabel batch_locations
         automationStatusId: 1,
         payloadInput: {
-          dhtTemperatureInput: 30.5,
-          npkHumidityInput: 55.2,
+          npkTemperatureInput: 30.5,
+          npkHumidityInput: 39.2,
         },
         state: 'Menyiram',
         duration: 240,
@@ -28,7 +28,7 @@ export default class extends BaseSeeder {
         batchLocationId: 1,
         automationStatusId: 1,
         payloadInput: {
-          dhtTemperatureInput: 27.1,
+          npkTemperatureInput: 23.1,
           npkHumidityInput: 65.8,
         },
         state: 'Tidak Menyiram',
@@ -40,7 +40,7 @@ export default class extends BaseSeeder {
         batchLocationId: 1,
         automationStatusId: 1,
         payloadInput: {
-          dhtTemperatureInput: 29.8,
+          npkTemperatureInput: 29.8,
           npkHumidityInput: 41.0,
         },
         state: 'Menyiram',

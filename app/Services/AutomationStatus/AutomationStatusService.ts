@@ -1,4 +1,5 @@
 import AutomationStatusRepository from 'App/Repositories/AutomationStatus/AutomationStatusRepository'
+import AutomationService from '../Automation/AutomationService'
 
 export default class AutomationStatusService {
   private automationStatusRepository: AutomationStatusRepository
@@ -28,6 +29,8 @@ export default class AutomationStatusService {
    * @returns The updated status of the system.
    */
   public async setStatus(systemName: string, newStatus: boolean) {
-    return await this.automationStatusRepository.updateStatusBySystem(systemName, newStatus)
+    const status = await this.automationStatusRepository.updateStatusBySystem(systemName, newStatus)
+    AutomationService.updateCachedState(systemName, newStatus)
+    return status
   }
 }
