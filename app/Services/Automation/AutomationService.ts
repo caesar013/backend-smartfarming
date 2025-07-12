@@ -39,7 +39,7 @@ export default class AutomationService {
    * Main automation function that orchestrates the entire process
    * @returns {Promise<void>}
    */
-  public async automate() {
+  public async automateNutrition() {
     // Get the status of the nutrition automation feature
     const statusRecord = await this.automationStatusService.getStatus('NUTRITION') // <-- Use the service to get the status
     const isNutritionEnabled = statusRecord.isActive
@@ -49,6 +49,13 @@ export default class AutomationService {
       Logger.info('[NUTRITION_AUTOMATION] Nutrition automation feature is OFF. Stopping process.')
       return
     }
+
+    // Prevent concurrent execution of the nutrition automation cycle
+    if (AutomationService.isRunningNutrition) {
+      Logger.warn('[NUTRITION_AUTOMATION] Another nutrition cycle is already running. Skipping this cycle.')
+      return
+    }
+
     try {
 
       console.log('--- GLOBAL NUTRITION AUTOMATION CYCLE BEGINS ---')
@@ -257,21 +264,13 @@ export default class AutomationService {
     // The array should only contain NPK sensors because of our filter.
     const npkSensor = batchLocation.bedLocation.sensors[0]
 
-    // Find the actuator by its slug
-    // const valve = batchLocation.bedLocation.actuators.find(actuator => actuator.slug === 'valve1')
-
     if (!npkSensor) {
       console.warn(`No NPK sensor found for plot ${batchLocation.bedLocation.name}. Skipping.`)
       return
     }
-    // if (!valveSlug) {
-    //   console.warn(`No nutrient valve actuator found for plot ${batchLocation.bedLocation.name}. Skipping.`)
-    //   return
-    // }
 
     // Extract all necessary info from the preloaded data
     const sensorId = npkSensor.id
-    // const actuatorSlug = valve.slug
     const plantId = batchLocation.plantingBatch.plantId
     const plantAge = Math.floor(DateTime.now().diff(batchLocation.plantingBatch.plantingDate, 'days').days)
     const plotName = batchLocation.bedLocation.name
@@ -302,22 +301,49 @@ export default class AutomationService {
     if (totalPumpDuration > 0) {
       console.log(`[AKTUATOR] Starting watering cycle for '${this.PUMP_ACTUATOR_SLUG}'...`)
 
-      // Turn ON the pump with retry logic
-      await this.actuatorService.sendCommandWithRetry(this.NUTRIENT_VALVE_SLUG, 'ON')
-      const pumpTurnOnSuccess = await this.actuatorService.sendCommandWithRetry(this.PUMP_ACTUATOR_SLUG, 'ON')
-
+      // Turn ON phase
+      const turnOnSuccessful = await this.executeCommands([
+        { slug: this.NUTRIENT_VALVE_SLUG, command: 'ON' },
+        { slug: this.PUMP_ACTUATOR_SLUG, command: 'ON' },
+      ])
 
       // Only proceed if turning ON was successful
-      if (pumpTurnOnSuccess) {
+      if (turnOnSuccessful) {
+        AutomationService.isRunningNutrition = true // Set the flag to prevent concurrent execution
         // Wait for the calculated duration
-        console.log(`[AKTUATOR] Pump is ON. Waiting for ${totalPumpDuration} seconds...`)
+        console.log(`[AKTUATOR] NUTRITION AUTOMATION is ON. Waiting for ${totalPumpDuration} seconds...`)
         await new Promise(resolve => setTimeout(resolve, totalPumpDuration * 1000))
 
-        // Turn OFF the pump with retry logic
+        // Turn OFF phase
         console.log(`[AKTUATOR] Time is up. Turning OFF pump '${this.PUMP_ACTUATOR_SLUG}'...`)
-        await this.actuatorService.sendCommandWithRetry(this.PUMP_ACTUATOR_SLUG, 'OFF')
-        await this.actuatorService.sendCommandWithRetry(this.NUTRIENT_VALVE_SLUG, 'OFF')
+        const turnOffSuccessful = await this.executeCommands([
+          { slug: this.PUMP_ACTUATOR_SLUG, command: 'OFF' },
+          { slug: this.NUTRIENT_VALVE_SLUG, command: 'OFF' },
+        ])
 
+        // Log the result
+        if (turnOffSuccessful) {
+          AutomationService.isRunningNutrition = false // Reset the flag for future runs
+          try {
+            await AutomationLog.create({
+              batchLocationId: batchLocation.id,
+              automationStatusId: 2,
+              payloadInput: {
+                npkConductivityInput: actualReadings.soilConductivity,
+                npkHumidityInput: actualReadings.soilHumidity,
+              },
+              state: effectiveDuration > 0 ? 'Otomasi Nutrisi Berjalan' : 'Otomasi Nutrisi Tidak Diperlukan',
+              duration: Math.round(effectiveDuration),
+            });
+            Logger.info(`[LOG] Automation decision for plot '${plotName}' has been logged to the database.`);
+          } catch (dbError) {
+            // Jika logging gagal, proses irigasi tetap lanjut.
+            // Kita hanya mencatat errornya agar tidak mengganggu fungsi utama.
+            Logger.error(`[LOG] Failed to write automation log to database: ${dbError.message}`);
+          }
+        } else {
+          console.error(`[AKTUATOR] Failed to turn OFF pump '${this.PUMP_ACTUATOR_SLUG}' or nutrient valve '${this.NUTRIENT_VALVE_SLUG}'.`)
+        }
       } else {
         console.error(`[AKTUATOR] Failed to turn on pump '${this.PUMP_ACTUATOR_SLUG}'. Aborting watering cycle.`)
       }
@@ -326,6 +352,28 @@ export default class AutomationService {
     }
 
     console.log(`--- Cycle for Plot: ${plotName} finished ---`)
+  }
+
+  /**
+   *
+   */
+  private async executeCommands(commands) {
+    // Map each command to a promise that executes it
+    const commandPromises = commands.map(cmd =>
+      this.actuatorService.sendCommandWithRetry(cmd.slug, cmd.command)
+    );
+
+    // Wait for all commands to complete
+    const results = await Promise.all(commandPromises);
+
+    // Check if every command in the results array returned true
+    const allSucceeded = results.every(success => success);
+
+    if (!allSucceeded) {
+      console.error(`[AKTUATOR] Failed to execute one or more commands successfully.`);
+    }
+
+    return allSucceeded;
   }
 
   /**

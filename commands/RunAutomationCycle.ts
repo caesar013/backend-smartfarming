@@ -45,7 +45,7 @@ export default class RunAutomationCycle extends BaseCommand {
     )
 
     // Jalankan siklus otomasi
-    await automationService.automate()
+    await automationService.automateNutrition()
 
     this.logger.success('Automation cycle finished successfully.')
   }
