@@ -1,6 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import ProfileService from 'App/Services/Profile/ProfileService'
-import UpdateProfileValidator from 'App/Validators/Profile/UpdateProfileValidator'
+import UpdateProfileValidator, { UpdatePasswordValidator } from 'App/Validators/Profile/UpdateProfileValidator'
 
 export default class ProfileController {
   private profileService: ProfileService
@@ -51,6 +51,29 @@ export default class ProfileController {
     return response.ok({
       message: "Profile updated successfully!",
       profile: updatedData // Serialize the user model to a plain object
+    })
+  }
+
+  /**
+   * changePassword
+   * Handle POST /profile/change-password
+   * Changes the authenticated user's password.
+   */
+  public async changePassword({ request, auth, response }: HttpContextContract) {
+    // 1. Get the currently authenticated user.
+    const user = auth.user!
+    console.log("Changing password for user:", user.username)
+    console.log("Changing password for email:", user.email)
+
+    // 2. Validate the incoming request data.
+    const validatedData = await request.validate(UpdatePasswordValidator)
+
+    // 3. Process the password change inside the service.
+    await this.profileService.changePassword(user, validatedData)
+
+    // 5. Return a success response.
+    return response.ok({
+      message: "Password changed successfully!"
     })
   }
 }

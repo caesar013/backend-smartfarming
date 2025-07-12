@@ -16,4 +16,18 @@ export default class ProfileRepository {
     // Optionally, you can return the updated user instance
     return user
   }
+
+  /**
+   * Change the user's password.
+   * @param user - The user model instance.
+   * @param data - The data containing the new password.
+   * @return A promise that resolves when the password is changed.
+   */
+  public async updateUserPassword(user: any, password: string) {
+    // Update the user's password.
+    user.password = password
+
+    // Save the changes to the database.
+    await user.save()
+  }
 }

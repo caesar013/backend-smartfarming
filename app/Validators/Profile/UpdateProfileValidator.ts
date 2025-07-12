@@ -70,3 +70,29 @@ export default class UpdateProfileValidator {
     'username.maxLength': 'Your username cannot exceed 500 characters.'
   }
 }
+
+export class UpdatePasswordValidator {
+  constructor(protected ctx: HttpContextContract) {}
+
+  public schema = schema.create({
+    currentPassword: schema.string({}, [
+      rules.minLength(8),
+      rules.maxLength(100)
+    ]),
+    newPassword: schema.string({}, [
+      rules.minLength(8),
+      rules.maxLength(100)
+    ]),
+    confirmNewPassword: schema.string({}, [
+      rules.minLength(8),
+      rules.maxLength(100),
+      rules.confirmed('newPassword')
+    ])
+  })
+
+  public messages: CustomMessages = {
+    'currentPassword.required': 'Current password is required.',
+    'newPassword.required': 'New password is required.',
+    'confirmNewPassword.required': 'Please confirm your new password.'
+  }
+}
