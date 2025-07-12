@@ -39,7 +39,7 @@ export default class AccountService extends BaseService {
     }
 
     try {
-      const role = await Role.findBy('code', 'ADMN')
+      const role = await Role.findBy('code', 'USER')
       data.urole_id = role?.id
       data.google_id = 1;
       await this.store(data);

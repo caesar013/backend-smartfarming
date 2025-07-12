@@ -10,9 +10,9 @@ export default class extends BaseSchema {
       table.increments('id').primary()
       // Foreign key dari table batch_location
       table.integer('batch_location_id').unsigned().references('id').inTable('batch_locations').onDelete('SET NULL')
+      table.integer('automation_status_id').unsigned().references('id').inTable('automation_statuses').onDelete('SET NULL')
       // untuk menerima nilai desimal dari sensor.
-      table.float('npk_temperature_input').nullable()
-      table.float('npk_humidity_input').nullable()
+      table.jsonb('payload_input').notNullable()
       table.string('state').notNullable() // Keputusan dari model ML
       table.integer('duration').unsigned().notNullable().defaultTo(0) // Durasi dalam detik
       // Timestamp

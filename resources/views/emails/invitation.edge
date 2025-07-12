@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Undangan Bergabung</title>
+  <style>
+    body { font-family: sans-serif; }
+    .link-box {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+      word-break: break-all; /* Memastikan URL tidak keluar dari box */
+    }
+  </style>
+</head>
+<body>
+  <h2>Halo {{ user.fullname }},</h2>
+  <p>Anda telah diundang untuk membuat akun. Silakan klik tautan di bawah ini untuk mengatur kata sandi Anda.</p>
+
+  <!-- Tampilkan URL secara eksplisit agar mudah di-copy jika link tidak berfungsi -->
+  <div class="link-box">
+    <a href="{{ url }}">{{ url }}</a>
+  </div>
+
+  <p>Jika Anda tidak bisa mengklik tautan di atas, silakan salin dan tempel URL tersebut di browser Anda.</p>
+  <p>Tautan ini akan kedaluwarsa dalam 24 jam.</p>
+  <p>Jika Anda tidak merasa meminta undangan ini, Anda dapat mengabaikan email ini.</p>
+</body>
+</html>

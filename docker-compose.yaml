@@ -36,6 +36,8 @@ services:
         condition: service_healthy # this will ensure that the database is up and running before starting the backend
       mqtt_broker:
         condition: service_started # this will ensure that the MQTT broker is up and running before starting the backend
+      mailhog:
+        condition: service_started # this will ensure that the MailHog is up and running before starting the backend
     ports:
       - ${PORT}:${PORT}
       - 9229:9229
@@ -89,6 +91,14 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "1025:1025" # Port SMTP
+      - "8025:8025" # Port Web UI
+    restart: unless-stopped
 
 volumes:
   postgres-data:

@@ -6,11 +6,10 @@ import Route from '@ioc:Adonis/Core/Route'
  */
 Route.group(() => {
   // --- Routes untuk Status On/Off ---
-  Route.get('/status', 'Automation/AutomationIrrigationStatusesController.getStatus')
-  Route.post('/status', 'Automation/AutomationIrrigationStatusesController.setStatus')
+  Route.get('/:system/status', 'Automation/AutomationStatusController.getStatus')
+  Route.patch('/:system/status', 'Automation/AutomationStatusController.setStatus')
 
   // --- Route untuk Riwayat Log ---
-  Route.get('/logs', 'Automation/AutomationIrrigationLogsController.index')
+  Route.get('/:system/logs', 'Automation/AutomationLogController.index')
 })
   .prefix('/automation')
-  .middleware('auth')
