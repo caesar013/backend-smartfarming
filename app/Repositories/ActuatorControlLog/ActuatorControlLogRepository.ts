@@ -65,4 +65,52 @@ export default class ActuatorControlLogRepository extends BaseRepository {
       return logInstance
     })
   }
+
+  /**
+   * Fetches actuator control logs with specific filters for actuator,
+   * status, and date range.
+   */
+  public async getFilteredLogs(options: any) {
+    const { pagination, sort, filter } = options
+    const query = ActuatorControlLog.query()
+
+    // Eager load the actuator information to display the name
+    query.preload('actuator')
+
+    // == Apply Filters ==
+
+    // 1. Filter by Actuator ID
+    if (filter?.actuatorId) {
+      query.where('actuatorId', filter.actuatorId)
+    }
+
+    // 2. Filter by Status (maps to the 'action' column)
+    if (filter?.status) {
+      query.where('action', filter.status)
+    }
+
+    // 3. Filter by Date Range (using 'createdAt' column)
+    if (filter?.startDate && filter?.endDate) {
+      // Ensure the end date covers the entire day
+      const endDate = new Date(filter.endDate)
+      endDate.setHours(23, 59, 59, 999)
+
+      query.whereBetween('createdAt', [filter.startDate, endDate.toISOString()])
+    }
+
+    // Apply sorting (e.g., newest first)
+    if (sort?.field && sort?.direction) {
+      query.orderBy(sort.field, sort.direction)
+    } else {
+      // Default sort
+      query.orderBy('createdAt', 'desc')
+    }
+
+    // Apply pagination
+    if (pagination?.page && pagination?.limit) {
+      return await query.paginate(pagination.page, pagination.limit)
+    }
+
+    return await query
+  }
 }
