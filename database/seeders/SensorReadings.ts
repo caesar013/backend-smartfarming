@@ -33,50 +33,50 @@ export default class extends BaseSeeder {
       {
         sensorId: dhtSensorId,
         payload: dhtPayload,
-        read_at: DateTime.now().minus({ minutes: 5 }), // Sesuai model: read_at
+        readAt: DateTime.now().minus({ minutes: 5 }), // Sesuai model: read_at
       },
       {
         sensorId: npk1SensorId,
         payload: npkPayload, // Menggunakan payload NPK yang sama
-        read_at: DateTime.now().minus({ minutes: 5 }),
+        readAt: DateTime.now().minus({ minutes: 5 }),
       },
       {
         sensorId: npk2SensorId,
         payload: npkPayload, // Menggunakan payload NPK yang sama
-        read_at: DateTime.now().minus({ minutes: 5 }),
+        readAt: DateTime.now().minus({ minutes: 5 }),
       },
 
       // --- Data Set 2 (Data terbaru) ---
       {
         sensorId: dhtSensorId,
         payload: { ...dhtPayload, humidity: 73.1 }, // Kelembapan sedikit berubah
-        read_at: DateTime.now(),
+        readAt: DateTime.now(),
       },
       {
         sensorId: npk1SensorId,
         payload: { ...npkPayload, humidity: 58 }, // Kelembapan tanah NPK1 sedikit berubah
-        read_at: DateTime.now(),
+        readAt: DateTime.now(),
       },
       {
         sensorId: npk2SensorId,
         payload: { ...npkPayload, humidity: 59 }, // Kelembapan tanah NPK2 sedikit berubah
-        read_at: DateTime.now(),
+        readAt: DateTime.now(),
       },
       // --- DATASET 3 ---
       {
         sensorId: dhtSensorId,
         payload: { ...dhtPayload, humidity: 50.1 }, // Kelembapan sedikit berubah
-        read_at: DateTime.now(),
+        readAt: DateTime.now(),
       },
       {
         sensorId: npk1SensorId,
         payload: { ...npkPayload, humidity: 30 }, // Kelembapan tanah NPK1 sedikit berubah
-        read_at: DateTime.now(),
+        readAt: DateTime.now(),
       },
       {
         sensorId: npk2SensorId,
         payload: { ...npkPayload, humidity: 20 }, // Kelembapan tanah NPK2 sedikit berubah
-        read_at: DateTime.now(),
+        readAt: DateTime.now(),
       },
     ])
 
