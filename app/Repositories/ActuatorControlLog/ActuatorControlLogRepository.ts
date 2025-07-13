@@ -93,7 +93,6 @@ export default class ActuatorControlLogRepository extends BaseRepository {
     if (filter?.startDate && filter?.endDate) {
       // Ensure the end date covers the entire day
       const endDate = new Date(filter.endDate)
-      endDate.setHours(23, 59, 59, 999)
 
       query.whereBetween('createdAt', [filter.startDate, endDate.toISOString()])
     }
