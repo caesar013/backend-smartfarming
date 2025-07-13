@@ -123,4 +123,14 @@ export default class AuthController {
     const data = Base64.decode(authHeader.split(' ')[1]).split(':')
     return { email: data[0], password: data[1] }
   }
+
+  public async me({ auth, response }: HttpContextContract) {
+    try {
+      const user = await auth.authenticate()
+      await user.load('role')
+      return response.api(user, 'User data retrieved successfully')
+    } catch (error) {
+      return response.error(error.message)
+    }
+  }
 }

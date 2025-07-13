@@ -6,5 +6,8 @@ Route.group(function () {
   Route.get('/status', 'Actuator/ActuatorController.getStatus').as('actuators.getStatus')
 }).prefix('actuators').middleware('admin')
 Route.resource('actuators', 'Actuator/ActuatorController').apiOnly().middleware({
-  '*': ['admin'],
+  'show': ['admin'],
+  'store': ['admin'],
+  'update': ['admin'],
+  'destroy': ['admin'],
 })

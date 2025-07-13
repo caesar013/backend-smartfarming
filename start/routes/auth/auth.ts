@@ -7,3 +7,4 @@ Route.get('/google/redirect', 'Auth/AuthController.oauthRedirect').as('auth.redi
 Route.get('/google/callback', 'Auth/AuthController.oauthCallback').as('auth.callback')
 Route.post('/forgot-password', 'Auth/AuthController.forgotPassword').as('auth.forgot-password')
 Route.post('/reset-password', 'Auth/AuthController.restorePassword').as('auth.reset-password')
+Route.get('/me', 'Auth/AuthController.me').as('auth.me').middleware('auth')
