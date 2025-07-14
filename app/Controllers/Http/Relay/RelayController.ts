@@ -73,11 +73,13 @@ export default class RelayController {
       const triggeredBy = auth.user ? auth.user.username : 'Unknown User'
       const newRequest = {
         action: actionString as 'ON' | 'OFF',
+      }
+      const options = {
         triggeredBy: triggeredBy,
       }
 
       // 5. Calls the new
-      const log = await this.actuatorService.controlActuator(actuator.slug, newRequest, triggeredBy);
+      const log = await this.actuatorService.controlActuator(actuator.slug, newRequest, options);
 
       return response.ok({
         message: `Command sent and acknowledged via deprecated route. Relay pin ${oldPayload.id} is now ${newRequest.action}.`,
