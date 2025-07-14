@@ -14,9 +14,7 @@ export default class CreatePlantingBatchValidator {
     ]),
     plantingDate: schema.date({
       format: 'yyyy-MM-dd',
-    }, [
-      rules.beforeField('harvestDate'),
-    ]),
+    }),
     harvestDate: schema.date.optional({
       format: 'yyyy-MM-dd',
     }, [
