@@ -24,7 +24,7 @@ export default class UpdateProfileValidator {
    *    ```
    */
   public schema = schema.create({
-    fullName: schema.string.optional({ trim: true }, [
+    fullname: schema.string.optional({ trim: true }, [
       rules.maxLength(100)
     ]),
 
@@ -63,7 +63,7 @@ export default class UpdateProfileValidator {
    *
    */
   public messages: CustomMessages = {
-    'fullName.maxLength': 'Your name cannot be longer than 180 characters.',
+    'fullname.maxLength': 'Your name cannot be longer than 180 characters.',
     'email.email': 'Please provide a valid email address.',
     'email.unique': 'This email address is already in use by another account.',
     'email.maxLength': 'The email address cannot be longer than 255 characters.',
