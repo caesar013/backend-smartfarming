@@ -6,5 +6,8 @@ Route.group(function () {
   Route.delete('/', 'Sensor/SensorController.destroyAll').as('sensor.destroyAll')
 }).prefix('sensor').middleware('admin')
 Route.resource('/sensors', 'Sensor/SensorController').apiOnly().middleware({
-  '*': ['admin'],
+  'store': ['admin'],
+  'show': ['admin'],
+  'update': ['admin'],
+  'destroy': ['admin'],
 })

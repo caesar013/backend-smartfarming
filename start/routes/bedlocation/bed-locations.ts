@@ -4,5 +4,8 @@ Route.group(function () {
   Route.delete('/', 'BedLocation/BedLocationController.destroyAll').as('bed-locations.destroyAll')
 }).prefix('bed-locations').middleware('admin')
 Route.resource('bed-locations', 'BedLocation/BedLocationController').apiOnly().middleware({
-  '*': ['admin'],
+  'store': ['admin'],
+  'show': ['admin'],
+  'update': ['admin'],
+  'destroy': ['admin'],
 })

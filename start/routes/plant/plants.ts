@@ -4,5 +4,8 @@ Route.group(function () {
   Route.delete('/', 'Plant/PlantController.destroyAll').as('plants.destroyAll')
 }).prefix('plants').middleware('admin')
 Route.resource('plants', 'Plant/PlantController').apiOnly().middleware({
-  '*': ['admin'],
+  'store': ['admin'],
+  'show': ['admin'],
+  'update': ['admin'],
+  'destroy': ['admin'],
 })
