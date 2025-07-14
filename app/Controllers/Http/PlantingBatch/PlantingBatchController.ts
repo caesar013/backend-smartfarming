@@ -73,22 +73,26 @@ export default class PlantingBatchController {
   }
 
   public async update({ params, request, response }: HttpContextContract) {
-    try {
-      await request.validate(UpdatePlantingBatchValidator)
-      const data = request.only(this.FETCHED_ATTRIBUTE)
-      const result = await this.service.update(params.id, data)
-      if (!result) {
-        return response.api(null, `PlantingBatch with id: ${params.id} not found`)
-      }
-      return response.api(result, 'PlantingBatch updated!')
-    } catch (error) {
-      if (error instanceof ValidationException) {
-        const errorValidation: any = error
-        return response.error(errorValidation.message, errorValidation.messages.errors, 422)
-      }
-      return response.error(error.message)
+  try {
+    // Get the full validated payload, including the optional 'locations'
+    const payload = await request.validate(UpdatePlantingBatchValidator)
+
+    // Call the new, specific service method for updating
+    const result = await this.service.updateBatch(params.id, payload)
+
+    if (!result) {
+      return response.api(null, `PlantingBatch with id: ${params.id} not found`, 404)
     }
+
+    return response.api(result, 'Planting Batch updated successfully!')
+  } catch (error) {
+    if (error instanceof ValidationException) {
+      const errorValidation: any = error
+      return response.error(errorValidation.message, errorValidation.messages.errors, 422)
+    }
+    return response.error(error.message)
   }
+}
 
   public async destroy({ params, response }: HttpContextContract) {
     try {

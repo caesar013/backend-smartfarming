@@ -69,4 +69,46 @@ export default class PlantingBatchRepository extends BaseRepository {
       throw error // Re-throw the error to be handled by the controller
     }
   }
+
+  /**
+   * Updates a PlantingBatch and syncs its locations within a database transaction.
+   * @param id The ID of the batch to update.
+   * @param payload The data to update, including an optional `locations` array.
+   */
+  public async updateWithLocations(id: number, payload: any) {
+    const { locations: locationIds, ...batchData } = payload
+    const trx = await Database.transaction()
+
+    try {
+      // 1. Find the batch record
+      const batch = await PlantingBatch.find(id, { client: trx })
+      if (!batch) {
+        await trx.rollback()
+        return null // Not found
+      }
+
+      // 2. Update the main batch data
+      batch.merge(batchData)
+      await batch.save() // This saves the changes within the transaction
+
+      // 3. If locationIds were provided, sync them.
+      // .sync() will add/remove relations to match the array.
+      if (locationIds) {
+        await batch.related('locations').sync(locationIds, true, trx) // Pass trx here
+      }
+
+      // 4. Commit the transaction
+      await trx.commit()
+
+      // Load relations to return the updated state
+      await batch.load('locations')
+      await batch.load('plant')
+
+      return batch
+    } catch (error) {
+      // If any step fails, roll back all changes
+      await trx.rollback()
+      throw error
+    }
+  }
 }

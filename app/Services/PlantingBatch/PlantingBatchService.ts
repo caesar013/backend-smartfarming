@@ -33,4 +33,16 @@ export default class PlantingBatchService extends BaseService {
       throw error
     }
   }
+
+  /**
+   * Updates a planting batch and syncs its locations.
+   */
+  public async updateBatch(id: number, payload: any) {
+    try {
+      const result = await this.repository.updateWithLocations(id, payload)
+      return result
+    } catch (error) {
+      throw error
+    }
+  }
 }
