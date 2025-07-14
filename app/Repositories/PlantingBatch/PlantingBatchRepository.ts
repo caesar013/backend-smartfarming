@@ -14,9 +14,14 @@ export default class PlantingBatchRepository extends BaseRepository {
     const { pagination, filter } = options
     const query = PlantingBatch.query()
 
-    // 1. Eager load relationships
-    // .preload('locations') is essential to get the many-to-many data
-    query.preload('plant').preload('locations')
+    // 1. Eager load the entire relationship chain needed for the 'phase' calculation
+    query
+      .preload('locations') // For the locations list
+      .preload('plant', (plantQuery) => { // Load the batch's plant...
+        plantQuery.preload('plantGrowthParameters', (pgpQuery) => { // ...then the plant's growth parameters...
+          pgpQuery.preload('growthStage'); // ...and finally the growth stage name for each parameter.
+        });
+      });
 
     // 2. Apply optional filter
     if (filter?.plantId) {
