@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column, ManyToMany, manyToMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column, computed, ManyToMany, manyToMany } from '@ioc:Adonis/Lucid/Orm'
 import Plant from '../Plant/Plant'
 import BedLocation from '../BedLocation/BedLocation'
 
@@ -40,6 +40,21 @@ export default class PlantingBatch extends BaseModel {
   @beforeFetch()
   public static fetchWithoutSoftDeletes(query) {
     query.whereNull("deleted_at")
+  }
+
+    /**
+   * Computed property to determine the current growth phase.
+   * The logic here is an example; you can adjust the days based on your plants' needs.
+   */
+  @computed()
+  public get phase(): string {
+    const daysSincePlanting = DateTime.now().diff(this.plantingDate, 'days').days
+
+    if (this.harvestDate) {
+      return 'Harvested'
+    }
+    // Example Logic: < 30 days is Vegetative, otherwise Generative
+    return daysSincePlanting < 30 ? 'Vegetative' : 'Generative'
   }
 
   @belongsTo(() => Plant)

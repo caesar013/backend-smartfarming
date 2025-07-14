@@ -13,17 +13,29 @@ export default class PlantingBatchController {
     'harvestDate',
   ]
 
-  public async index ({ request, response }: HttpContextContract) {
+  public async index({ request, response }: HttpContextContract) {
     try {
-      const options = request.parseParams(request.all())
-      const result = await this.service.getAll(options)
-      return response.api(result, 'OK', 200, request)
+      // Parse query parameters for filtering and pagination
+      const options = {
+        filter: {
+          plantId: request.input('plantId'), // Reads ?plantId= from the URL
+        },
+        pagination: {
+          page: request.input('page', 1),
+          limit: request.input('limit', 10),
+        },
+      }
+
+      // Call the new dedicated service method
+      const result = await this.service.getBatches(options)
+
+      return response.api(result, 'OK', 200)
     } catch (error) {
       return response.error(error.message)
     }
   }
 
-  public async store ({ request, response }: HttpContextContract) {
+  public async store({ request, response }: HttpContextContract) {
     try {
       await request.validate(CreatePlantingBatchValidator)
       const data = request.only(this.FETCHED_ATTRIBUTE)
@@ -38,7 +50,7 @@ export default class PlantingBatchController {
     }
   }
 
-  public async show ({ params, request, response }: HttpContextContract) {
+  public async show({ params, request, response }: HttpContextContract) {
     try {
       const options = request.parseParams(request.all())
       const result = await this.service.show(params.id, options)
@@ -51,7 +63,7 @@ export default class PlantingBatchController {
     }
   }
 
-  public async update ({ params, request, response }: HttpContextContract) {
+  public async update({ params, request, response }: HttpContextContract) {
     try {
       await request.validate(UpdatePlantingBatchValidator)
       const data = request.only(this.FETCHED_ATTRIBUTE)
@@ -69,7 +81,7 @@ export default class PlantingBatchController {
     }
   }
 
-  public async destroy ({ params, response }: HttpContextContract) {
+  public async destroy({ params, response }: HttpContextContract) {
     try {
       const result = await this.service.delete(params.id)
       if (!result) {
@@ -81,7 +93,7 @@ export default class PlantingBatchController {
     }
   }
 
-  public async destroyAll ({ response }: HttpContextContract) {
+  public async destroyAll({ response }: HttpContextContract) {
     try {
       await this.service.deleteAll()
       return response.api(null, 'All PlantingBatch deleted!')
