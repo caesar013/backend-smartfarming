@@ -17,4 +17,20 @@ export default class PlantingBatchService extends BaseService {
       throw error
     }
   }
+
+  /**
+   * Creates a new planting batch and associates it with locations.
+   */
+  public async createBatch(payload: any) {
+    try {
+      // Destructure the payload to separate locations from the main data
+      const { locations, ...batchData } = payload
+
+      // Call the new repository method
+      const result = await this.repository.createWithLocations(batchData, locations)
+      return result
+    } catch (error) {
+      throw error
+    }
+  }
 }

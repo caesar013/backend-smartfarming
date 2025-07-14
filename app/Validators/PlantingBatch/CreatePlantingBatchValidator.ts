@@ -20,5 +20,14 @@ export default class CreatePlantingBatchValidator {
     }, [
       rules.afterField('plantingDate'),
     ]),
+
+    // Add validation for the locations array
+    locations: schema.array([
+      rules.minLength(1) // Ensure at least one location is selected
+    ]).members(
+      schema.number([
+        rules.exists({ table: 'bed_locations', column: 'id' }) // Ensure each ID exists
+      ])
+    )
   })
 }

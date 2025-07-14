@@ -35,20 +35,29 @@ export default class PlantingBatchController {
     }
   }
 
+  /**
+   * Store a newly created resource in storage.
+   * This method now uses the CreatePlantingBatchValidator to validate the request.
+   * @param param { request, response }: HttpContextContract
+   * @returns { Promise<void> }
+   */
   public async store({ request, response }: HttpContextContract) {
-    try {
-      await request.validate(CreatePlantingBatchValidator)
-      const data = request.only(this.FETCHED_ATTRIBUTE)
-      const result = await this.service.store(data)
-      return response.api(result, 'PlantingBatch created!', 201)
-    } catch (error) {
-      if (error instanceof ValidationException) {
-        const errorValidation: any = error
-        return response.error(errorValidation.message, errorValidation.messages.errors, 422)
-      }
-      return response.error(error.message)
+  try {
+    // The payload now contains the validated locations array
+    const payload = await request.validate(CreatePlantingBatchValidator)
+
+    // Call the new, specific service method
+    const result = await this.service.createBatch(payload)
+
+    return response.api(result, 'Planting Batch created successfully!', 201)
+  } catch (error) {
+    if (error instanceof ValidationException) {
+      const errorValidation: any = error
+      return response.error(errorValidation.message, errorValidation.messages.errors, 422)
     }
+    return response.error(error.message)
   }
+}
 
   public async show({ params, request, response }: HttpContextContract) {
     try {
