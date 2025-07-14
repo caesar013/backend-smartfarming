@@ -1,5 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeFetch, beforeFind, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import Plant from '../Plant/Plant'
+import GrowthStage from '../GrowthStage/GrowthStage'
 
 export default class PlantGrowthParameter extends BaseModel {
   public static softDelete = true
@@ -53,4 +55,10 @@ export default class PlantGrowthParameter extends BaseModel {
   public static fetchWithoutSoftDeletes(query) {
     query.whereNull("deleted_at")
   }
+
+  @belongsTo(() => Plant)
+  public plant: BelongsTo<typeof Plant>
+
+  @belongsTo(() => GrowthStage)
+  public growthStage: BelongsTo<typeof GrowthStage>
 }
