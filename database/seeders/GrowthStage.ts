@@ -15,9 +15,9 @@ export default class extends BaseSeeder {
         description: 'The flowering stage is when the plant produces flowers, which are essential for reproduction.'
       },
       {
-        name: 'Fruiting',
+        name: 'Generative',
         order: 3,
-        description: 'The fruiting stage is when the plant develops fruits, which contain seeds for the next generation.'
+        description: 'The Generative stage is when the plant develops fruits, which contain seeds for the next generation.'
       },
     ])
   }
