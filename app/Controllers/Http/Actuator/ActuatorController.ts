@@ -12,6 +12,8 @@ export default class ActuatorController {
     'actuatorTypeId',
     'bedLocationId',
     'name',
+    'relayPin',
+    'maxDuration'
   ]
 
   public async index({ request, response }: HttpContextContract) {
