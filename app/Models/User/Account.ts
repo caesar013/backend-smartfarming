@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import Role from './Role'
+import Invitation from '../Invitation/Invitation'
 
 export default class Account extends BaseModel {
   public static softDelete = true
@@ -60,4 +61,10 @@ export default class Account extends BaseModel {
     foreignKey: 'urole_id'
   })
   public role: BelongsTo<typeof Role>
+
+  @hasMany(() => Invitation, {
+    foreignKey: 'userId',
+    localKey: 'id',
+  })
+  public invitations: HasMany<typeof Invitation>
 }
