@@ -53,6 +53,6 @@ Route.get('/', async ({ view }) => {
   return view.render('welcome')
 })
 
-  Route.post('users/accept-invitation', 'Admin/UsersController.acceptInvitation').as('users.acceptInvitation')
+Route.post('/api/accept-invitation', 'Admin/UsersController.acceptInvitation').as('users.acceptInvitation')
 
 Route.on('*').render('index')
