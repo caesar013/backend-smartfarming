@@ -45,13 +45,28 @@ export default class Actuator extends BaseModel {
 
   @beforeCreate()
   public static async createSlug(actuator: Actuator) {
-    if (actuator.$dirty.name) {
-      actuator.slug = slugify(actuator.name, {
-        lower: true,
-        strict: true,
-        trim: true,
-      })
+    // Only generate slug if the name is being set/changed
+    if (!actuator.$dirty.name) {
+      return
     }
+
+    const baseSlug = slugify(actuator.name, {
+      lower: true,
+      strict: true,
+      trim: true,
+    })
+
+    let slug = baseSlug
+    let counter = 1
+
+    // Keep checking for a unique slug until one is found
+    // The loop continues as long as an actuator with the current `slug` exists
+    while (await Actuator.query().where('slug', slug).first()) {
+      slug = `${baseSlug}-${counter}`
+      counter++
+    }
+
+    actuator.slug = slug
   }
 
   @beforeFind()
