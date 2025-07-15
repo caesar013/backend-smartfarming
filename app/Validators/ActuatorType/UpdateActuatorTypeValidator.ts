@@ -11,7 +11,11 @@ export default class UpdateActuatorTypeValidator {
     // your validation rules
     typeName: schema.string.optional({ trim: true }, [
       rules.maxLength(100),
-      rules.unique({ table: 'actuator_types', column: 'type_name' }),
+      rules.unique({
+        table: 'actuator_types',
+        column: 'type_name',
+        whereNot: { id: this.ctx.params.id },
+      }),
     ]),
     description: schema.string.optional({ trim: true }),
   })
