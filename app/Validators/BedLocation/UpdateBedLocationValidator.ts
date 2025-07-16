@@ -15,4 +15,10 @@ export default class UpdateBedLocationValidator {
     description: schema.string.optional({ trim: true }),
     address: schema.string.optional({ trim: true }),
   })
+
+  public messages = {
+    'name.maxLength': 'Name cannot exceed 255 characters.',
+    'description.string': 'Description must be a string.',
+    'address.string': 'Address must be a string.',
+  }
 }

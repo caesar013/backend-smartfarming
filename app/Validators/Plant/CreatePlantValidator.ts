@@ -16,4 +16,10 @@ export default class CreatePlantValidator {
     ]),
     description: schema.string.optional({ trim: true }),
   })
+
+  public messages = {
+    'name.maxLength': 'Name cannot exceed 200 characters.',
+    'scientificName.maxLength': 'Scientific name cannot exceed 100 characters.',
+    'description.string': 'Description must be a string.',
+  }
 }

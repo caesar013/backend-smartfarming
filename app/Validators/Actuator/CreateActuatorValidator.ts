@@ -24,4 +24,13 @@ export default class CreateActuatorValidator {
     ]),
     maxDuration: schema.number.optional()
   })
+
+  public messages = {
+    'actuatorTypeId.exists': 'Actuator type does not exist.',
+    'bedLocationId.exists': 'Bed location does not exist.',
+    'name.maxLength': 'Name cannot exceed 255 characters.',
+    'name.minLength': 'Name must be at least 1 character long.',
+    'relayPin.regex': 'Relay pin must contain only digits.',
+    'maxDuration.number': 'Max duration must be a number.'
+  }
 }

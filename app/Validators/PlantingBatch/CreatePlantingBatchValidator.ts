@@ -30,4 +30,13 @@ export default class CreatePlantingBatchValidator {
       ])
     )
   })
+
+  public messages = {
+    'plantId.exists': 'Plant ID must exist in the plants table.',
+    'plantingDate.date': 'Planting date must be a valid date in the format yyyy-MM-dd.',
+    'harvestDate.date': 'Harvest date must be a valid date in the format yyyy-MM-dd.',
+    'harvestDate.afterField': 'Harvest date must be after planting date.',
+    'locations.minLength': 'At least one location must be selected.',
+    'locations.*.exists': 'Each location ID must exist in the bed_locations table.'
+  }
 }

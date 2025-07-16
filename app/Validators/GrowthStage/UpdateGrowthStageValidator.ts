@@ -27,4 +27,12 @@ export default class UpdateGrowthStageValidator {
     ]),
     description: schema.string.optional({ trim: true }),
   })
+
+  public messages = {
+    'name.maxLength': 'Name cannot exceed 100 characters.',
+    'name.unique': 'Name must be unique.',
+    'order.unsigned': 'Order must be a positive number.',
+    'order.unique': 'Order must be unique.',
+    'description.string': 'Description must be a string.',
+  }
 }

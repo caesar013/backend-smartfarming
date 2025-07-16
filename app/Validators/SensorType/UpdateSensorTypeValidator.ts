@@ -26,4 +26,14 @@ export default class UpdateSensorTypeValidator {
       rules.maxLength(500),
     ]),
   })
+
+  public messages = {
+    'name.maxLength': 'Name cannot exceed 100 characters.',
+    'name.minLength': 'Name must be at least 3 characters long.',
+    'typeCode.maxLength': 'Type code cannot exceed 50 characters.',
+    'typeCode.minLength': 'Type code must be at least 2 characters long.',
+    'typeCode.unique': 'Type code must be unique.',
+    'description.string': 'Description must be a string.',
+    'description.maxLength': 'Description cannot exceed 500 characters.',
+  }
 }

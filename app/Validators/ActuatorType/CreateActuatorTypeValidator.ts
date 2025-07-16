@@ -15,4 +15,10 @@ export default class CreateActuatorTypeValidator {
     ]),
     description: schema.string.optional({ trim: true }),
   })
+
+  public messages = {
+    'typeName.maxLength': 'Type name cannot exceed 100 characters.',
+    'typeName.unique': 'Type name must be unique.',
+    'description.string': 'Description must be a string.',
+  }
 }

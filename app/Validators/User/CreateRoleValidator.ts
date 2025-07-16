@@ -15,4 +15,9 @@ export default class CreateRoleValidator {
 			rules.maxLength(50)
 		]),
   })
+
+  public messages = {
+    'code.maxLength': 'Role code cannot exceed 4 characters.',
+    'name.maxLength': 'Role name cannot exceed 50 characters.',
+  }
 }
