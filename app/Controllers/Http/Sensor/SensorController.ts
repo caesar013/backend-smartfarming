@@ -10,6 +10,9 @@ export default class SensorController {
     // attribute
     'name',
     'desc',
+    'publicName',
+    'sensorTypeId',
+    'bedLocationId',
   ]
 
   public async index({ request, response }: HttpContextContract) {
