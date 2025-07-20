@@ -70,6 +70,11 @@ export default class Location extends BaseModel {
   @column.dateTime({ autoCreate: false, autoUpdate: true, serializeAs: 'updatedAt' })
   public updatedAt: DateTime
 
+
+  static get table() {
+    return "public.locations" // table name
+  }
+
   // --- Relationships ---
 
   /**
