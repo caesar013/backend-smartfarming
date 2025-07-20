@@ -10,7 +10,7 @@ export default class BedLocationController {
     // attribute
     'name',
     'description',
-    'address',
+    'locationId',
   ]
 
   public async index({ request, response }: HttpContextContract) {

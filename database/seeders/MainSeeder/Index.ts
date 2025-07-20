@@ -8,6 +8,7 @@ export default class extends BaseSeeder {
     // Write your database queries inside the run method
     await this.runSeeder(await import('Database/seeders/Role'))
     await this.runSeeder(await import('Database/seeders/Account'))
+    await this.runSeeder(await import('Database/seeders/Location'))
     await this.runSeeder(await import('Database/seeders/BedLocation'))
     await this.runSeeder(await import('Database/seeders/SensorType'))
     await this.runSeeder(await import('Database/seeders/Sensor'))

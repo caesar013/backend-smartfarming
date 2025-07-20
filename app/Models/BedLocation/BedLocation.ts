@@ -1,8 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeFetch, beforeFind, column, HasMany, hasMany, ManyToMany, manyToMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column, HasMany, hasMany, ManyToMany, manyToMany } from '@ioc:Adonis/Lucid/Orm'
 import Actuator from '../Actuator/Actuator'
 import PlantingBatch from '../PlantingBatch/PlantingBatch'
 import Sensor from '../Sensor/Sensor'
+import Location from '../Location/Location'
 
 export default class BedLocation extends BaseModel {
   public static softDelete = true
@@ -16,8 +17,8 @@ export default class BedLocation extends BaseModel {
   @column()
   public description: string | null
 
-  @column()
-  public address: string | null
+  @column({ serializeAs: 'locationId' })
+  public locationId: number | null
 
   @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
   public createdAt: DateTime
@@ -53,4 +54,7 @@ export default class BedLocation extends BaseModel {
 
   @hasMany(() => Actuator)
   public actuators: HasMany<typeof Actuator>
+
+  @belongsTo(() => Location)
+  public location: BelongsTo<typeof Location>
 }
