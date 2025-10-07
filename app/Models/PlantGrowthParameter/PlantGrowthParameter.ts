@@ -7,7 +7,7 @@ export default class PlantGrowthParameter extends BaseModel {
   public static softDelete = true
 
   @column({ isPrimary: true })
-  public id: string
+  public id: number
 
   @column({ serializeAs: 'plantId'})
   public plantId: number
@@ -32,6 +32,12 @@ export default class PlantGrowthParameter extends BaseModel {
 
   @column({ serializeAs: 'maxSoilHumidity' })
   public maxSoilHumidity: number | null
+
+  @column({ serializeAs: 'minPh' })
+  public minPh: number
+
+  @column({ serializeAs: 'maxPh' })
+  public maxPh: number | null
 
   @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
   public createdAt: DateTime

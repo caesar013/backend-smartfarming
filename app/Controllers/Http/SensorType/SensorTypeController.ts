@@ -1,6 +1,6 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { ValidationException } from '@ioc:Adonis/Core/Validator'
-import SensorTypeService from 'App/Services/Sensor Type/SensorTypeService'
+import SensorTypeService from 'App/Services/SensorType/SensorTypeService'
 import CreateSensorTypeValidator from 'App/Validators/SensorType/CreateSensorTypeValidator'
 import UpdateSensorTypeValidator from 'App/Validators/SensorType/UpdateSensorTypeValidator'
 

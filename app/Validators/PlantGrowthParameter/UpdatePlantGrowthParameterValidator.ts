@@ -35,6 +35,12 @@ export default class UpdatePlantGrowthParameterValidator {
     moistureMax: schema.number.optional([
       rules.unsigned(),
     ]),
+    minPh: schema.number.optional([
+      rules.unsigned(),
+    ]),
+    maxPh: schema.number.optional([
+      rules.unsigned(),
+    ])
   })
 
   public messages = {
@@ -48,5 +54,7 @@ export default class UpdatePlantGrowthParameterValidator {
     'ecMax.unsigned': 'Maximum EC must be a positive number.',
     'moistureMin.unsigned': 'Minimum moisture must be a positive number.',
     'moistureMax.unsigned': 'Maximum moisture must be a positive number.',
+    'minPh.unsigned': 'Minimum pH must be a positive number.',
+    'maxPh.unsigned': 'Maximum pH must be a positive number.',
   }
 }

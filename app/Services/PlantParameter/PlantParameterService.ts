@@ -26,6 +26,8 @@ export default class PlantParameterService {
         maxSoilEc: parameters.maxSoilEc || parameters.minSoilEc + 300,
         minSoilHumidity: parameters.minSoilHumidity,
         maxSoilHumidity: parameters.maxSoilHumidity || parameters.minSoilHumidity + 20,
+        minPh: parameters.minPh,
+        maxPh: parameters.maxPh || parameters.minPh + 1
       }
     } catch (error) {
       console.error('Error saat mengambil parameter pertumbuhan:', error)

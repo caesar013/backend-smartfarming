@@ -13,6 +13,8 @@ export default class extends BaseSeeder {
         maxSoilEc: 1000,
         minSoilHumidity: 40,
         maxSoilHumidity: 60,
+        minPh: 5.4,
+        maxPh: 6.5,
       },
       {
         plantId: 1,
@@ -23,6 +25,8 @@ export default class extends BaseSeeder {
         maxSoilEc: 1000,
         minSoilHumidity: 40,
         maxSoilHumidity: 60,
+        minPh: 5.4,
+        maxPh: 6.5,
       },
       {
         plantId: 1,
@@ -33,6 +37,8 @@ export default class extends BaseSeeder {
         maxSoilEc: 1000,
         minSoilHumidity: 40,
         maxSoilHumidity: 60,
+        minPh: 5.4,
+        maxPh: 6.5,
       },
       {
         plantId: 2,
@@ -42,6 +48,8 @@ export default class extends BaseSeeder {
         minSoilEc: 1000,
         maxSoilEc: 1200,
         minSoilHumidity: 40,
+        minPh: 5.8,
+        maxPh: 6.5,
       },
       {
         plantId: 2,
@@ -50,6 +58,8 @@ export default class extends BaseSeeder {
         maxAge: 60,
         minSoilEc: 1000,
         minSoilHumidity: 30,
+        minPh: 5.8,
+        maxPh: 6.5,
       },
       {
         plantId: 2,
@@ -58,6 +68,8 @@ export default class extends BaseSeeder {
         maxAge: 90,
         minSoilEc: 1000,
         minSoilHumidity: 30,
+        minPh: 5.8,
+        maxPh: 6.5,
       }
     ])
   }

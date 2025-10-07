@@ -25,9 +25,9 @@ const outputs = {
   durasiPenyiraman: {
     Tidak_Siram: 0,
     // Nilai dalam DETIK
-    Sedikit: 90,  // 1.5 menit * 60 detik
-    Sedang: 180, // 3 menit * 60 detik
-    Lama: 300,    // 5 menit * 60 detik
+    Sedikit: 30,  // 0.5 menit * 60 detik
+    Sedang: 60, // 1 menit * 60 detik
+    Lama: 90,    // 1.5 menit * 60 detik
   },
 };
 

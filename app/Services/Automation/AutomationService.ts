@@ -290,13 +290,13 @@ export default class AutomationService {
       return
     }
 
-    const effectiveDuration = this.fuzzyDecisionService.calculatePumpDuration(targetParams, actualReadings)
+    const { pumpDuration, ...rest } = this.fuzzyDecisionService.calculateDecision(targetParams, actualReadings)
     let totalPumpDuration = 0
-    if (effectiveDuration > 0) {
-      totalPumpDuration = Math.round(effectiveDuration + this.PUMP_LATENCY_SECONDS)
+    if (pumpDuration > 0) {
+      totalPumpDuration = Math.round(pumpDuration + this.PUMP_LATENCY_SECONDS)
     }
 
-    console.log(`Decision: Effective Duration=${effectiveDuration}s, Total Duration=${totalPumpDuration}s`)
+    console.log(`Decision: Effective Duration=${pumpDuration}s, Total Duration=${totalPumpDuration}s`)
 
     if (totalPumpDuration > 0) {
       console.log(`[AKTUATOR] Starting watering cycle for '${this.PUMP_ACTUATOR_SLUG}'...`)
@@ -332,8 +332,8 @@ export default class AutomationService {
                 npkConductivityInput: actualReadings.soilConductivity,
                 npkHumidityInput: actualReadings.soilHumidity,
               },
-              state: effectiveDuration > 0 ? 'Otomasi Nutrisi Berjalan' : 'Otomasi Nutrisi Tidak Diperlukan',
-              duration: Math.round(effectiveDuration),
+              state: pumpDuration > 0 ? 'Otomasi Nutrisi Berjalan' : 'Otomasi Nutrisi Tidak Diperlukan',
+              duration: Math.round(pumpDuration),
             });
             Logger.info(`[LOG] Automation decision for plot '${plotName}' has been logged to the database.`);
           } catch (dbError) {

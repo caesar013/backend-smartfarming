@@ -32,43 +32,60 @@ class MqttService {
       // Subscribe to the sensor data topic
       this.client.subscribe('farm/sensor/#', { qos: 1 }, (err) => {
         if (!err) {
-          console.log("Subscribed successfully to sensor data topic.");
+          console.log("Subscribed successfully to 'farm/sensor' topic.");
         }
       });
 
       // Subscribe to a single topic for actuator commands AND replies
       this.client.subscribe('farm/actuator', { qos: 1 }, (err) => {
         if (!err) {
-          console.log("Subscribed successfully to actuator topic.")
+          console.log("Subscribed successfully to 'farm/actuator' topic.")
+        }
+      });
+
+      // --- NEW: Subscribe to the on-demand health check topic ---
+      this.client.subscribe('farm/health_check', { qos: 1 }, (err) => {
+        if (!err) {
+          console.log("Subscribed successfully to 'farm/health_check' topic.")
         }
       })
     });
 
     this.client.on('message', async (topic, message) => {
+      const messageString = message.toString();
       // Handle incoming sensor data
       if (topic.startsWith('farm/sensor')) {
         console.log(`Received sensor data at ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })}. Processing...`);
         try {
-          const msg = JSON.parse(message.toString());
+          const msg = JSON.parse(messageString);
           const service = new SensorReadingService();
           await service.handleIncomingMessage(msg);
         } catch (e) {
           console.error("Failed to process incoming sensor message:", e);
         }
       }
-
-      // Handle other topics like actuator status feedback
-      if (topic === 'farm/actuator') {
+      // Handle actuator status feedback
+      else if (topic === 'farm/actuator') {
         try {
-          const data = JSON.parse(message.toString())
-
-          // Check if the message is a status reply and has a correlation ID
+          const data = JSON.parse(messageString)
           if (data.type === 'status_reply' && data.correlationId) {
-            // Emit the event with the correlation ID
             this.emitter.emit(data.correlationId, data)
           }
         } catch (e) {
-          console.error("Could not parse incoming actuator JSON:", message.toString())
+          console.error("Could not parse incoming actuator JSON:", messageString)
+        }
+      }
+      // --- NEW: Handle health check responses from the ESP32 ---
+      else if (topic === 'farm/health_check') {
+        try {
+          const data = JSON.parse(messageString)
+          // Check if it's a health check response and has a correlation ID
+          if (data.type === 'check_response' && data.correlationId) {
+            // Emit the event with the correlation ID, the same way actuator replies do
+            this.emitter.emit(data.correlationId, data)
+          }
+        } catch (e) {
+          console.error("Could not parse incoming health check JSON:", messageString)
         }
       }
     });

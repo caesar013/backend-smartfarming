@@ -1,10 +1,11 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column, computed, ManyToMany, manyToMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeFetch, beforeFind, BelongsTo, belongsTo, column, ManyToMany, manyToMany } from '@ioc:Adonis/Lucid/Orm'
 import Plant from '../Plant/Plant'
 import BedLocation from '../BedLocation/BedLocation'
 
 export default class PlantingBatch extends BaseModel {
   public static softDelete = true
+  public static serializeExtras = true
 
   @column({ isPrimary: true })
   public id: number
@@ -40,36 +41,6 @@ export default class PlantingBatch extends BaseModel {
   @beforeFetch()
   public static fetchWithoutSoftDeletes(query) {
     query.whereNull("deleted_at")
-  }
-
-  /**
-   * Computed property to dynamically determine the current growth phase
-   * using preloaded growth parameter data.
-   */
-  @computed()
-  public get phase(): string {
-    // Priority 1: Check if harvested
-    if (this.harvestDate) {
-      return 'Harvested';
-    }
-
-    // Check if the necessary relationships were loaded to prevent errors
-    if (!this.plant?.$preloaded.plantGrowthParameters) {
-      return 'Calculating...'; // Or 'Unknown'
-    }
-
-    // Calculate the current age of the batch in days
-    const daysSincePlanting = Math.floor(DateTime.now().diff(this.plantingDate, 'days').days);
-
-    // Find the correct growth parameter from the preloaded array
-    const currentParameter = this.plant.plantGrowthParameters.find(param => {
-      const isAfterMin = daysSincePlanting >= param.minAge;
-      const isBeforeMax = param.maxAge === null || daysSincePlanting <= param.maxAge;
-      return isAfterMin && isBeforeMax;
-    });
-
-    // Return the stage name if found, otherwise a default
-    return currentParameter?.growthStage?.name || 'Uncategorized';
   }
 
   @belongsTo(() => Plant)

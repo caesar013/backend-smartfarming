@@ -27,9 +27,28 @@ export default class PlantingBatchController {
       }
 
       // Call the new dedicated service method
-      const result = await this.service.getBatches(options)
+      const fullResult = await this.service.getBatches(options)
 
-      return response.api(result, 'OK', 200)
+      const leanResult = {
+      meta: fullResult.meta, // Keep the pagination meta as is
+      data: fullResult.data.map((batch: any) => {
+        // For each batch, return a new object with only the fields you need
+        return {
+          id: batch.id,
+          plantingDate: batch.plantingDate,
+          harvestDate: batch.harvestDate,
+          plant: {
+            name: batch.plant.name,
+          },
+          locations: batch.locations.map((loc) => ({ name: loc.name })),
+          dailyStatus: batch.dailyStatus,
+        }
+      }),
+    }
+
+    // 3. Return the new, leaner result
+    return leanResult
+      // return response.api(result, 'OK', 200)
     } catch (error) {
       return response.error(error.message)
     }
@@ -42,22 +61,22 @@ export default class PlantingBatchController {
    * @returns { Promise<void> }
    */
   public async store({ request, response }: HttpContextContract) {
-  try {
-    // The payload now contains the validated locations array
-    const payload = await request.validate(CreatePlantingBatchValidator)
+    try {
+      // The payload now contains the validated locations array
+      const payload = await request.validate(CreatePlantingBatchValidator)
 
-    // Call the new, specific service method
-    const result = await this.service.createBatch(payload)
+      // Call the new, specific service method
+      const result = await this.service.createBatch(payload)
 
-    return response.api(result, 'Planting Batch created successfully!', 201)
-  } catch (error) {
-    if (error instanceof ValidationException) {
-      const errorValidation: any = error
-      return response.error(errorValidation.message, errorValidation.messages.errors, 422)
+      return response.api(result, 'Planting Batch created successfully!', 201)
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        const errorValidation: any = error
+        return response.error(errorValidation.message, errorValidation.messages.errors, 422)
+      }
+      return response.error(error.message)
     }
-    return response.error(error.message)
   }
-}
 
   public async show({ params, request, response }: HttpContextContract) {
     try {
@@ -73,26 +92,26 @@ export default class PlantingBatchController {
   }
 
   public async update({ params, request, response }: HttpContextContract) {
-  try {
-    // Get the full validated payload, including the optional 'locations'
-    const payload = await request.validate(UpdatePlantingBatchValidator)
+    try {
+      // Get the full validated payload, including the optional 'locations'
+      const payload = await request.validate(UpdatePlantingBatchValidator)
 
-    // Call the new, specific service method for updating
-    const result = await this.service.updateBatch(params.id, payload)
+      // Call the new, specific service method for updating
+      const result = await this.service.updateBatch(params.id, payload)
 
-    if (!result) {
-      return response.api(null, `PlantingBatch with id: ${params.id} not found`, 404)
+      if (!result) {
+        return response.api(null, `PlantingBatch with id: ${params.id} not found`, 404)
+      }
+
+      return response.api(result, 'Planting Batch updated successfully!')
+    } catch (error) {
+      if (error instanceof ValidationException) {
+        const errorValidation: any = error
+        return response.error(errorValidation.message, errorValidation.messages.errors, 422)
+      }
+      return response.error(error.message)
     }
-
-    return response.api(result, 'Planting Batch updated successfully!')
-  } catch (error) {
-    if (error instanceof ValidationException) {
-      const errorValidation: any = error
-      return response.error(errorValidation.message, errorValidation.messages.errors, 422)
-    }
-    return response.error(error.message)
   }
-}
 
   public async destroy({ params, response }: HttpContextContract) {
     try {

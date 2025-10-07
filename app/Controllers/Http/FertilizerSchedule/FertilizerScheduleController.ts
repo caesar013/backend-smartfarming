@@ -1,26 +1,21 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import PlantGrowthParameterService from 'App/Services/PlantGrowthParameter/PlantGrowthParameterService'
-import CreatePlantGrowthParameterValidator from 'App/Validators/PlantGrowthParameter/CreatePlantGrowthParameterValidator'
-import UpdatePlantGrowthParameterValidator from 'App/Validators/PlantGrowthParameter/UpdatePlantGrowthParameterValidator'
+import FertilizerScheduleService from 'App/Services/FertilizerSchedule/FertilizerScheduleService'
+import CreateFertilizerScheduleValidator from 'App/Validators/FertilizerSchedule/CreateFertilizerScheduleValidator'
+import UpdateFertilizerScheduleValidator from 'App/Validators/FertilizerSchedule/UpdateFertilizerScheduleValidator'
 import { ValidationException } from '@ioc:Adonis/Core/Validator'
 
-export default class PlantGrowthParameterController {
-  service = new PlantGrowthParameterService()
+export default class FertilizerScheduleController {
+  service = new FertilizerScheduleService()
   FETCHED_ATTRIBUTE = [
     // attribute
-    'plantId',
-    'growthStageId',
-    'minAge',
-    'maxAge',
-    'minSoilEc',
-    'maxSoilEc',
-    'minSoilHumidity',
-    'maxSoilHumidity',
-    'minPh',
-    'maxPh',
+    'plantGrowthParameterId',
+    'fertilizerId',
+    'dayOfApplication',
+    'amount',
+    'unit',
   ]
 
-  public async index({ request, response }: HttpContextContract) {
+  public async index ({ request, response }: HttpContextContract) {
     try {
       const options = request.parseParams(request.all())
       const result = await this.service.getAll(options)
@@ -30,12 +25,12 @@ export default class PlantGrowthParameterController {
     }
   }
 
-  public async store({ request, response }: HttpContextContract) {
+  public async store ({ request, response }: HttpContextContract) {
     try {
-      await request.validate(CreatePlantGrowthParameterValidator)
+      await request.validate(CreateFertilizerScheduleValidator)
       const data = request.only(this.FETCHED_ATTRIBUTE)
       const result = await this.service.store(data)
-      return response.api(result, 'PlantGrowthParameter created!', 201)
+      return response.api(result, 'FertilizerSchedule created!', 201)
     } catch (error) {
       if (error instanceof ValidationException) {
         const errorValidation: any = error
@@ -45,12 +40,12 @@ export default class PlantGrowthParameterController {
     }
   }
 
-  public async show({ params, request, response }: HttpContextContract) {
+  public async show ({ params, request, response }: HttpContextContract) {
     try {
       const options = request.parseParams(request.all())
       const result = await this.service.show(params.id, options)
       if (!result) {
-        return response.api(null, `PlantGrowthParameter with id: ${params.id} not found`)
+        return response.api(null, `FertilizerSchedule with id: ${params.id} not found`)
       }
       return response.api(result)
     } catch (error) {
@@ -58,15 +53,15 @@ export default class PlantGrowthParameterController {
     }
   }
 
-  public async update({ params, request, response }: HttpContextContract) {
+  public async update ({ params, request, response }: HttpContextContract) {
     try {
-      await request.validate(UpdatePlantGrowthParameterValidator)
+      await request.validate(UpdateFertilizerScheduleValidator)
       const data = request.only(this.FETCHED_ATTRIBUTE)
       const result = await this.service.update(params.id, data)
       if (!result) {
-        return response.api(null, `PlantGrowthParameter with id: ${params.id} not found`)
+        return response.api(null, `FertilizerSchedule with id: ${params.id} not found`)
       }
-      return response.api(result, 'PlantGrowthParameter updated!')
+      return response.api(result, 'FertilizerSchedule updated!')
     } catch (error) {
       if (error instanceof ValidationException) {
         const errorValidation: any = error
@@ -76,22 +71,22 @@ export default class PlantGrowthParameterController {
     }
   }
 
-  public async destroy({ params, response }: HttpContextContract) {
+  public async destroy ({ params, response }: HttpContextContract) {
     try {
       const result = await this.service.delete(params.id)
       if (!result) {
-        return response.api(null, `PlantGrowthParameter with id: ${params.id} not found`)
+        return response.api(null, `FertilizerSchedule with id: ${params.id} not found`)
       }
-      return response.api(null, 'PlantGrowthParameter deleted!')
+      return response.api(null, 'FertilizerSchedule deleted!')
     } catch (error) {
       return response.error(error.message)
     }
   }
 
-  public async destroyAll({ response }: HttpContextContract) {
+  public async destroyAll ({ response }: HttpContextContract) {
     try {
       await this.service.deleteAll()
-      return response.api(null, 'All PlantGrowthParameter deleted!')
+      return response.api(null, 'All FertilizerSchedule deleted!')
     } catch (error) {
       return response.error(error.message)
     }

@@ -55,4 +55,10 @@ Route.get('/', async ({ view }) => {
 
 Route.post('/api/accept-invitation', 'Admin/UsersController.acceptInvitation').as('users.acceptInvitation')
 
+// Route to process sensor data and get a fuzzy logic decision
+Route.post('/automation/process', 'Automation/AutomationController.processSensorData')
+
+// You can also use a GET route for easy testing in the browser
+Route.get('/automation/test', 'AutomationController.processSensorData')
+
 Route.on('*').render('index')

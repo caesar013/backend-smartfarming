@@ -35,6 +35,12 @@ export default class CreatePlantGrowthParameterValidator {
     maxSoilHumidity: schema.number.optional([
       rules.unsigned(),
     ]),
+    minPh: schema.number([
+      rules.unsigned(),
+    ]),
+    maxPh: schema.number.optional([
+      rules.unsigned(),
+    ])
   })
 
   public messages = {
@@ -48,5 +54,7 @@ export default class CreatePlantGrowthParameterValidator {
     'maxSoilEc.unsigned': 'Maximum soil EC must be a positive number.',
     'minSoilHumidity.unsigned': 'Minimum soil humidity must be a positive number.',
     'maxSoilHumidity.unsigned': 'Maximum soil humidity must be a positive number.',
+    'minPh.unsigned': 'Minimum pH must be a positive number.',
+    'maxPh.unsigned': 'Maximum pH must be a positive number.',
   }
 }
