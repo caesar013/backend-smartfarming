@@ -290,7 +290,7 @@ export default class AutomationService {
       return
     }
 
-    const { pumpDuration, ...rest } = this.fuzzyDecisionService.calculateDecision(targetParams, actualReadings)
+    const { pumpDuration } = this.fuzzyDecisionService.calculateDecision(targetParams, actualReadings)
     let totalPumpDuration = 0
     if (pumpDuration > 0) {
       totalPumpDuration = Math.round(pumpDuration + this.PUMP_LATENCY_SECONDS)
