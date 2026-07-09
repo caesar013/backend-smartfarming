@@ -58,6 +58,9 @@ Route.post('/api/accept-invitation', 'Admin/UsersController.acceptInvitation').a
 // Route to process sensor data and get a fuzzy logic decision
 Route.post('/automation/process', 'Automation/AutomationController.processSensorData')
 
+// Dry-run fuzzy irrigation calculation for local/Postman testing only. Does not actuate pump/valve.
+Route.post('/automation/irrigation/calculate', 'Automation/IrrigationFuzzyController.calculate')
+
 // You can also use a GET route for easy testing in the browser
 Route.get('/automation/test', 'AutomationController.processSensorData')
 

@@ -3,7 +3,7 @@ import PlantGrowthParameter from 'App/Models/PlantGrowthParameter/PlantGrowthPar
 
 export default class extends BaseSeeder {
   public async run() {
-    await PlantGrowthParameter.createMany([
+    const parameters = [
       {
         plantId: 1,
         growthStageId: 1,
@@ -70,7 +70,41 @@ export default class extends BaseSeeder {
         minSoilHumidity: 30,
         minPh: 5.8,
         maxPh: 6.5,
+      },
+      {
+        plantId: 3,
+        growthStageId: 1,
+        minAge: 0,
+        maxAge: 45,
+        minSoilEc: 700,
+        maxSoilEc: 1000,
+        minSoilHumidity: 40,
+        maxSoilHumidity: 60,
+        minPh: 5.5,
+        maxPh: 6.5,
+      },
+      {
+        plantId: 3,
+        growthStageId: 3,
+        minAge: 75,
+        maxAge: 360,
+        minSoilEc: 700,
+        maxSoilEc: 1000,
+        minSoilHumidity: 40,
+        maxSoilHumidity: 60,
+        minPh: 5.5,
+        maxPh: 6.5,
       }
-    ])
+    ]
+
+    for (const parameter of parameters) {
+      await PlantGrowthParameter.updateOrCreate(
+        {
+          plantId: parameter.plantId,
+          growthStageId: parameter.growthStageId,
+        },
+        parameter
+      )
+    }
   }
 }
