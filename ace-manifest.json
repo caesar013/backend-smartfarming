@@ -77,7 +77,7 @@
       },
       "commandPath": "./commands/RunIrrigationCycle",
       "commandName": "automation:run-irrigation",
-      "description": "Menjalankan satu siklus otomasi untuk IRIGASI.",
+      "description": "Menjalankan satu siklus otomasi lengkap untuk IRIGASI.",
       "args": [],
       "aliases": [],
       "flags": []

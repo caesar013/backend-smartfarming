@@ -9,6 +9,7 @@ import PlantParameterService from "App/Services/PlantParameter/PlantParameterSer
 import SensorReadingService from "App/Services/SensorReading/SensorReadingService"
 import FuzzyDecisionService from "App/Services/FuzzyDecision/FuzzyDecisionService"
 import FuzzyIrrigationService from "App/Services/FuzzyDecision/FuzzyIrrigationService"
+import BmkgWeatherService from "App/Services/Weather/BmkgWeatherService"
 import ActuatorService from "App/Services/Actuator/ActuatorService"
 
 export default class RunIrrigationCycle extends BaseCommand {
@@ -28,6 +29,7 @@ export default class RunIrrigationCycle extends BaseCommand {
       const sensorReadingService = new SensorReadingService()
       const fuzzyDecisionService = new FuzzyDecisionService()
       const fuzzyIrrigationService = new FuzzyIrrigationService()
+      const bmkgWeatherService = new BmkgWeatherService()
       const actuatorService = new ActuatorService()
 
       // 2. Buat instance dari service utama, dengan menyuntikkan semua dependensinya
@@ -36,6 +38,7 @@ export default class RunIrrigationCycle extends BaseCommand {
         sensorReadingService,
         fuzzyDecisionService,
         fuzzyIrrigationService,
+        bmkgWeatherService,
         actuatorService
       )
 

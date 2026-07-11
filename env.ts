@@ -34,4 +34,6 @@ export default Env.rules({
   MQTT_USERNAME: Env.schema.string(),
   MQTT_PASSWORD: Env.schema.string(),
   MQTT_CLIENT_ID: Env.schema.string(),
+  BMKG_ADM4: Env.schema.string.optional(),
+  BMKG_TIMEOUT_MS: Env.schema.number.optional(),
 });

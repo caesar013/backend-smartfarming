@@ -3,6 +3,7 @@ import ActuatorService from 'App/Services/Actuator/ActuatorService'
 import AutomationService from 'App/Services/Automation/AutomationService'
 import FuzzyDecisionService from 'App/Services/FuzzyDecision/FuzzyDecisionService'
 import FuzzyIrrigationService from 'App/Services/FuzzyDecision/FuzzyIrrigationService'
+import BmkgWeatherService from 'App/Services/Weather/BmkgWeatherService'
 import PlantParameterService from 'App/Services/PlantParameter/PlantParameterService'
 import SensorReadingService from 'App/Services/SensorReading/SensorReadingService'
 
@@ -34,6 +35,7 @@ export default class RunAutomationCycle extends BaseCommand {
     const sensorReadingService = new SensorReadingService()
     const fuzzyDecisionService = new FuzzyDecisionService()
     const fuzzyIrrigationService = new FuzzyIrrigationService()
+    const bmkgWeatherService = new BmkgWeatherService()
     const actuatorService = new ActuatorService()
 
     const automationService = new AutomationService(
@@ -41,6 +43,7 @@ export default class RunAutomationCycle extends BaseCommand {
       sensorReadingService,
       fuzzyDecisionService,
       fuzzyIrrigationService,
+      bmkgWeatherService,
       actuatorService
     )
 

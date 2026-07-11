@@ -8,7 +8,14 @@ import Logger from '@ioc:Adonis/Core/Logger'
 import FuzzyIrrigationService from "App/Services/FuzzyDecision/FuzzyIrrigationService"
 import AutomationLog from "App/Models/Automation/AutomationLog"
 import AutomationStatusService from "../AutomationStatus/AutomationStatusService"
+import BmkgWeatherService, { FuzzyWeatherCondition } from "App/Services/Weather/BmkgWeatherService"
 
+type ResolvedIrrigationWeather = {
+  condition: FuzzyWeatherCondition
+  description?: string
+  forecastTime?: string
+  source: 'bmkg' | 'fallback'
+}
 
 export default class AutomationService {
   // Flag to indicate if the irrigation automation feature is enabled.
@@ -26,6 +33,7 @@ export default class AutomationService {
     private sensorReadingService: SensorReadingService,
     private fuzzyDecisionService: FuzzyDecisionService, // for nutrition
     private fuzzyIrrigationService: FuzzyIrrigationService, // for irrigation
+    private bmkgWeatherService: BmkgWeatherService,
     private actuatorService: ActuatorService
   ) {
     this.automationStatusService = new AutomationStatusService()
@@ -35,6 +43,29 @@ export default class AutomationService {
   PUMP_ACTUATOR_SLUG = 'pump'
   NUTRIENT_VALVE_SLUG = 'nutrient-valve'
   WATER_VALVE_SLUG = 'water-valve'
+
+  private async resolveIrrigationWeather(): Promise<ResolvedIrrigationWeather> {
+    try {
+      const weather = await this.bmkgWeatherService.getCurrentFuzzyWeather()
+      Logger.info(`[IRRIGATION] BMKG weather resolved as ${weather.condition} (${weather.description || '-'})`)
+
+      return {
+        condition: weather.condition,
+        description: weather.description,
+        forecastTime: weather.forecastTime,
+        source: 'bmkg',
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      Logger.warn(`[IRRIGATION] Failed to get BMKG weather. Falling back to Cerah. Error: ${message}`)
+
+      return {
+        condition: 'Cerah',
+        source: 'fallback',
+      }
+    }
+  }
+
   /**
    * Main automation function that orchestrates the entire process
    * @returns {Promise<void>}
@@ -144,6 +175,8 @@ export default class AutomationService {
 
       Logger.info(`Found ${allBatchLocations.length} active batch locations for irrigation.`)
 
+      const irrigationWeather = await this.resolveIrrigationWeather()
+
       for (const batchLocation of allBatchLocations) {
         // =========================================================================================
         // --- LOGGING TAMBAHAN UNTUK DEBUGGING ---
@@ -154,7 +187,7 @@ export default class AutomationService {
         // =========================================================================================
 
         if (batchLocation.bedLocation && sensorCount >= 1) {
-          await this.processSingleLocationForIrrigation(batchLocation)
+          await this.processSingleLocationForIrrigation(batchLocation, irrigationWeather)
         } else {
           Logger.warn(`Skipping irrigation for location ${locationName} due to incomplete data (sensors or actuators).`)
         }
@@ -173,7 +206,7 @@ export default class AutomationService {
      * Memproses logika irigasi untuk satu BatchLocation,
      * dari membaca sensor hingga menyimpan log.
      */
-  private async processSingleLocationForIrrigation(batchLocation: BatchLocation,) {
+  private async processSingleLocationForIrrigation(batchLocation: BatchLocation, weather: ResolvedIrrigationWeather) {
     const plotName = batchLocation.bedLocation.name;
     Logger.info(`\n--- [IRRIGATION] Processing Plot: ${plotName} ---`);
 
@@ -201,9 +234,13 @@ export default class AutomationService {
     }
 
     // --- 3. Hitung Keputusan menggunakan Fuzzy Logic ---
+    const kondisiCuaca = weather.condition;
+    Logger.info(`[IRRIGATION] Weather input for fuzzy calculation: ${kondisiCuaca} (${weather.description || weather.source})`);
+
     const effectiveDuration = this.fuzzyIrrigationService.calculateIrrigationDuration({
       suhuTanah: suhuTanah,
       kelembapanTanah: kelembapanTanah,
+      cuaca: kondisiCuaca,
     });
 
     // --- 4. Simpan Log Keputusan ke Database ---
@@ -214,6 +251,10 @@ export default class AutomationService {
         payloadInput: {
           npkTemperatureInput: suhuTanah,
           npkHumidityInput: kelembapanTanah,
+          weatherInput: kondisiCuaca,
+          weatherDescription: weather.description,
+          weatherForecastTime: weather.forecastTime,
+          weatherSource: weather.source,
         },
         state: effectiveDuration > 0 ? 'Menyiram' : 'Tidak Menyiram',
         duration: Math.round(effectiveDuration),

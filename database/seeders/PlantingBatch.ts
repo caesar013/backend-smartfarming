@@ -4,21 +4,34 @@ import { DateTime } from 'luxon'
 
 export default class extends BaseSeeder {
   public async run() {
-    const createdBatches = await PlantingBatch.createMany([
+    const batches = [
       {
         plantId: 1,
         plantingDate: DateTime.fromISO('2025-02-01'),
+        locationIds: [1, 2],
       },
       {
         plantId: 2,
         plantingDate: DateTime.fromISO('2025-02-01'),
+        locationIds: [1, 2],
+      },
+      {
+        plantId: 3,
+        plantingDate: DateTime.fromISO('2026-05-07'),
+        locationIds: [1, 2],
       }
-    ])
+    ]
 
-    const stroberiBatch = createdBatches.find(batch => batch.plantId === 1)
-    const kabochaBatch = createdBatches.find(batch => batch.plantId === 2)
+    for (const { locationIds, ...batchData } of batches) {
+      const batch = await PlantingBatch.updateOrCreate(
+        {
+          plantId: batchData.plantId,
+          plantingDate: batchData.plantingDate,
+        },
+        batchData
+      )
 
-    await stroberiBatch?.related('locations').attach([1, 2])
-    await kabochaBatch?.related('locations').attach([1, 2])
+      await batch.related('locations').sync(locationIds)
+    }
   }
 }
