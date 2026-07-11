@@ -176,11 +176,6 @@ export default class FuzzyIrrigationService {
     public calculateIrrigationDuration(inputs: IrrigationFuzzyInputs): number {
         const result = this.calculateIrrigationDetail(inputs);
 
-        if (result.duration === 0 && result.rawDuration < result.minimumEffectiveDuration) {
-            Logger.info(`[FUZZY_IRRIGATION] Final duration (${result.rawDuration.toFixed(2)}s) is below threshold. Setting to 0.`);
-            return 0;
-        }
-
         Logger.info(`[FUZZY_IRRIGATION] Calculated effective duration: ${result.duration}s`);
         return result.duration;
     }
