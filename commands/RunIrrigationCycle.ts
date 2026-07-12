@@ -24,6 +24,8 @@ export default class RunIrrigationCycle extends BaseCommand {
     // Properti 'this.logger' sekarang akan dikenali dengan benar
     this.logger.info('Memulai siklus otomasi IRIGASI melalui Ace command...')
 
+    const mqttClient = (await import('App/Services/Mqtt/MqttService')).default
+
     try {
       const plantParameterService = new PlantParameterService()
       const sensorReadingService = new SensorReadingService()
@@ -42,6 +44,9 @@ export default class RunIrrigationCycle extends BaseCommand {
         actuatorService
       )
 
+      // Tunggu koneksi broker sebelum siklus mem-publish perintah aktuator
+      await mqttClient.waitForConnection(10000)
+
       // 3. Jalankan siklus otomasi IRIGASI
       await automationService.automateIrrigation()
 
@@ -49,7 +54,9 @@ export default class RunIrrigationCycle extends BaseCommand {
     } catch (error) {
       this.logger.error('Terjadi kesalahan saat menjalankan siklus otomasi irigasi.')
       // Menggunakan error.stack akan memberikan lebih banyak detail saat debugging
-      this.logger.error(error.stack)
+      this.logger.error(error.stack ?? error.message)
+    } finally {
+      await mqttClient.close()
     }
   }
 }

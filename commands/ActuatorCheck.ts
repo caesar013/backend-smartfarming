@@ -31,13 +31,17 @@ export default class ActuatorCheck extends BaseCommand {
   public async run() {
     this.logger.info('Starting actuator deactivation check...')
 
+    const mqttClient = (await import('App/Services/Mqtt/MqttService')).default
     const actuatorService = new ActuatorService()
     try {
+      await mqttClient.waitForConnection(10000)
       await actuatorService.checkAndDeactivate()
       this.logger.success('Actuator check completed successfully.')
     } catch (error) {
       this.logger.error('An error occurred during the actuator check:')
-      this.logger.error(error)
+      this.logger.error(error.stack ?? error.message)
+    } finally {
+      await mqttClient.close()
     }
   }
 }

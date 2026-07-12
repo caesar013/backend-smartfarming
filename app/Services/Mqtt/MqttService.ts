@@ -113,6 +113,59 @@ class MqttService {
   }
 
   /**
+   * Resolves once the client has an established broker connection.
+   *
+   * `mqtt.connect()` runs in the constructor but completes asynchronously, so a
+   * short-lived process (an Ace command) can reach its first publish before the
+   * CONNACK lands. Await this before publishing from a command.
+   *
+   * @param timeout Duration in milliseconds to wait for the connection.
+   */
+  public waitForConnection(timeout: number = 10000): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if (this.client.connected) {
+        return resolve();
+      }
+
+      const cleanup = () => {
+        clearTimeout(timeoutId);
+        this.client.removeListener('connect', onConnect);
+        this.client.removeListener('error', onError);
+      };
+
+      const onConnect = () => {
+        cleanup();
+        resolve();
+      };
+
+      const onError = (err: Error) => {
+        cleanup();
+        reject(err);
+      };
+
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error(`Timeout: MQTT broker connection not established within ${timeout}ms.`));
+      }, timeout);
+
+      this.client.once('connect', onConnect);
+      this.client.once('error', onError);
+    });
+  }
+
+  /**
+   * Closes the broker connection and waits for the socket to finish.
+   *
+   * Short-lived processes should call this so the broker sees a clean
+   * disconnect instead of an abandoned connection.
+   */
+  public close(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      this.client.end(false, {}, () => resolve());
+    });
+  }
+
+  /**
    * Waits for a specific reply identified by a correlation ID.
    * @param correlationId The unique ID of the command to wait for.
    * @param timeout Duration in milliseconds.

@@ -29,27 +29,39 @@ export default class RunAutomationCycle extends BaseCommand {
   public async run() {
     this.logger.info('Starting automation cycle via Ace command...')
 
-    // Logika ini sama persis seperti yang ada di AutomationController
-    // Kita membuat instance dari semua service yang dibutuhkan
-    const plantParameterService = new PlantParameterService()
-    const sensorReadingService = new SensorReadingService()
-    const fuzzyDecisionService = new FuzzyDecisionService()
-    const fuzzyIrrigationService = new FuzzyIrrigationService()
-    const bmkgWeatherService = new BmkgWeatherService()
-    const actuatorService = new ActuatorService()
+    const mqttClient = (await import('App/Services/Mqtt/MqttService')).default
 
-    const automationService = new AutomationService(
-      plantParameterService,
-      sensorReadingService,
-      fuzzyDecisionService,
-      fuzzyIrrigationService,
-      bmkgWeatherService,
-      actuatorService
-    )
+    try {
+      // Logika ini sama persis seperti yang ada di AutomationController
+      // Kita membuat instance dari semua service yang dibutuhkan
+      const plantParameterService = new PlantParameterService()
+      const sensorReadingService = new SensorReadingService()
+      const fuzzyDecisionService = new FuzzyDecisionService()
+      const fuzzyIrrigationService = new FuzzyIrrigationService()
+      const bmkgWeatherService = new BmkgWeatherService()
+      const actuatorService = new ActuatorService()
 
-    // Jalankan siklus otomasi
-    await automationService.automateNutrition()
+      const automationService = new AutomationService(
+        plantParameterService,
+        sensorReadingService,
+        fuzzyDecisionService,
+        fuzzyIrrigationService,
+        bmkgWeatherService,
+        actuatorService
+      )
 
-    this.logger.success('Automation cycle finished successfully.')
+      // Tunggu koneksi broker sebelum siklus mem-publish perintah aktuator
+      await mqttClient.waitForConnection(10000)
+
+      // Jalankan siklus otomasi
+      await automationService.automateNutrition()
+
+      this.logger.success('Automation cycle finished successfully.')
+    } catch (error) {
+      this.logger.error('An error occurred during the nutrition automation cycle:')
+      this.logger.error(error.stack ?? error.message)
+    } finally {
+      await mqttClient.close()
+    }
   }
 }
