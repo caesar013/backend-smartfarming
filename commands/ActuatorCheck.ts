@@ -28,11 +28,33 @@ export default class ActuatorCheck extends BaseCommand {
     stayAlive: false,
   }
 
+  /**
+   * Arbitrary but stable key identifying this command's advisory lock.
+   * Must not collide with other advisory locks taken against the same database.
+   */
+  private static readonly LOCK_KEY = 4815162342
+
   public async run() {
     this.logger.info('Starting actuator deactivation check...')
 
+    const Database = (await import('@ioc:Adonis/Lucid/Database')).default
     const mqttClient = (await import('App/Services/Mqtt/MqttService')).default
     const actuatorService = new ActuatorService()
+
+    // This command runs every minute, but a run with failing MQTT retries can
+    // take longer than that. Without a lock, overlapping runs both read the same
+    // expired rows before either writes its OFF log, producing duplicate OFF
+    // commands. A session-scoped advisory lock is released automatically when
+    // the connection drops, so a crashed run cannot wedge the lock permanently.
+    const lockResult = await Database.rawQuery('SELECT pg_try_advisory_lock(?) AS acquired', [
+      ActuatorCheck.LOCK_KEY,
+    ])
+
+    if (!lockResult.rows[0]?.acquired) {
+      this.logger.info('Another actuator check is still running. Skipping this run.')
+      return
+    }
+
     try {
       await mqttClient.waitForConnection(10000)
       await actuatorService.checkAndDeactivate()
@@ -41,6 +63,7 @@ export default class ActuatorCheck extends BaseCommand {
       this.logger.error('An error occurred during the actuator check:')
       this.logger.error(error.stack ?? error.message)
     } finally {
+      await Database.rawQuery('SELECT pg_advisory_unlock(?)', [ActuatorCheck.LOCK_KEY])
       await mqttClient.close()
     }
   }
