@@ -124,25 +124,52 @@ export default class ActuatorService extends BaseService {
       return
     }
 
+    let succeeded = 0
+    let failed = 0
+
     for (const log of actuatorsToTurnOff) {
       try {
         console.log(`Deactivating actuator ${log.actuatorId} as its schedule has expired.`)
 
         // Find the actuators to control based on the log entry
         const actuatorToControl = await this.repository.findById(log.actuatorId)
-        console.log(`Found actuator: ${actuatorToControl.name} with slug: ${actuatorToControl.slug}`)
-        if (actuatorToControl) {
-          // Use the existing control method to send the 'OFF' command via MQTT
-          await this.sendCommandWithRetry(actuatorToControl.slug, 'OFF');
-        } else {
+
+        if (!actuatorToControl) {
           console.warn(`Could not find actuator with ID ${log.actuatorId} to deactivate. It may have been deleted.`)
+          failed++
+          continue
         }
+
+        console.log(`Found actuator: ${actuatorToControl.name} with slug: ${actuatorToControl.slug}`)
+
+        // Use the existing control method to send the 'OFF' command via MQTT
+        const wasTurnedOff = await this.sendCommandWithRetry(actuatorToControl.slug, 'OFF')
+
+        if (wasTurnedOff) {
+          succeeded++
+          continue
+        }
+
+        failed++
+
+        // All MQTT retries failed, so `controlActuator` never wrote its OFF log.
+        // Record the failed attempt so this log entry stops matching
+        // `findExpiredOnCommands` and the cron does not retry it every minute.
+        // `triggeredBy` marks the state as unverified: the OFF command was never
+        // acknowledged by the device, so the relay may still be physically ON.
+        await this.logRepository.create({
+          actuatorId: actuatorToControl.id,
+          action: 'OFF',
+          triggeredBy: 'System (unverified)',
+        })
+        console.error(`[AKTUATOR] Logged failed deactivation for '${actuatorToControl.slug}'. Physical state is UNKNOWN.`)
       } catch (error) {
+        failed++
         console.error(`Failed to deactivate actuator ${log.actuatorId}:`, error.message)
       }
     }
 
-    console.log(`Successfully processed ${actuatorsToTurnOff.length} actuator(s) for deactivation.`);
+    console.log(`Deactivation check finished: ${succeeded} succeeded, ${failed} failed, out of ${actuatorsToTurnOff.length} actuator(s).`)
   }
 
   /**
